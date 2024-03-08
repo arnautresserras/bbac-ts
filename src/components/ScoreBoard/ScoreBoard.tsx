@@ -1,5 +1,7 @@
 import { IoMdArrowDropup } from "react-icons/io";
 import BasesBug from "../BasesBug/BasesBug";
+import ProgressBar from "./StaminaBar";
+import StaminaBar from "./StaminaBar";
 
 interface Props{
     balls: number;
@@ -16,7 +18,7 @@ const ScoreBoard = (props:Props) => {
         <div className="scoreBug">
             <div className="score">
                 <p>Score: {props.score}</p>
-                <p>Stamina: {props.pitcherStamina}</p>
+                <StaminaBar stamina={props.pitcherStamina}></StaminaBar>
             </div>
             <div className="countBug">
                 <div className="innings"><IoMdArrowDropup />{props.inning}</div>
