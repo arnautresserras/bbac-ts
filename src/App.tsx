@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import DisplayHand from './components/DisplayHand/DisplayHand';
-import CountBug from './components/CountBug/CountBug';
 import ScoreBoard from './components/ScoreBoard/ScoreBoard';
 
 function App() {
@@ -234,23 +232,20 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
-        <button onClick={()=> dealHand()}>Deal hand</button>
-        <div>
-          {/*<AdminControls modalVisible={modalVisible} setModalVisible={setModalVisible} ></AdminControls>*/}
-          <div >
-            <ScoreBoard score={score} pitcherStamina={pitcherStamina}></ScoreBoard>
-            <CountBug balls={countBalls} strikes={countStrikes} outs={countOuts} inning={inning} bases={bases}></CountBug>
-          </div>
-          <div>
-            <p>Cards in deck: {currentDeck.length}</p>
-            <p>Cards in discard: {discard.length}</p>
-            <p>Cards in hand: {hand.length}</p>
-            <p>Total cards: {currentDeck.length + discard.length + hand.length}</p>
-          </div>
-          <DisplayHand playCard={playCard} hand={hand}></DisplayHand>
+      <button onClick={()=> dealHand()}>Deal hand</button>
+      <div>
+        {/*<AdminControls modalVisible={modalVisible} setModalVisible={setModalVisible} ></AdminControls>*/}
+        <div >
+          <ScoreBoard score={score} pitcherStamina={pitcherStamina} balls={countBalls} strikes={countStrikes} outs={countOuts} inning={inning} bases={bases}></ScoreBoard>
         </div>
-      </header>
+        <div>
+          <p>Cards in deck: {currentDeck.length}</p>
+          <p>Cards in discard: {discard.length}</p>
+          <p>Cards in hand: {hand.length}</p>
+          <p>Total cards: {currentDeck.length + discard.length + hand.length}</p>
+        </div>
+        <DisplayHand playCard={playCard} hand={hand}></DisplayHand>
+      </div>
     </div>
   );
 }
