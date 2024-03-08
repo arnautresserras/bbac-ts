@@ -5,12 +5,59 @@
   font-optical-sizing: auto;
   font-style: normal;
 }
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0 auto;
+  background-color: #fff;
+  z-index: 1000;
+  padding: 2rem;
+  overflow-y: scroll;
+  border-radius: 5px;
+}
+.modal.large{
+  width: 60vw;
+  height: 75vh;
+  max-width: 700px;
+}
+.modal.small{
+  
+}
+.modal h2{
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+.modal .body{
+  margin-bottom: 2rem;
+}
+.modal p{
+  text-align: justify;
+  margin: 2px auto;
+}
+.modal ul{
+  padding-left: 1.1rem;
+}
+.modal ul li{
+  margin: 1rem auto;
+}
+.modal button{
+  font-size: 1.2rem;
+  margin: auto 0 0 0;
+}
 button{
   background-color: #111;
   color: #fff;
   border: none;
   border-radius: 5px;
   box-shadow: none;
+  padding: .5rem 1rem;
 }
 .BbaC-body {
   display: flex;
@@ -34,13 +81,21 @@ button{
   color: #111;
 }
 .score{
-  width: 85px;
+  width: 25%;
+}
+.score-runs {
+  font-size: 2rem;
+  text-align: center;
 }
 .countBug {
   flex-direction: row;
   justify-content: space-evenly;
   align-items: center;
-  width: 50px;
+  width: 25%;
+}
+.displayBug {
+  max-width: 25%;
+  min-width: 130px;
 }
 .innings {
   font-size: 1.4rem;

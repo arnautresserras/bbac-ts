@@ -3,11 +3,13 @@ import './App.css';
 import DisplayHand from './components/DisplayHand/DisplayHand';
 import ScoreBoard from './components/ScoreBoard/ScoreBoard';
 import DeckInfo from './components/DeckInfo/DeckInfo';
+import Modal from './components/Modal/Modal';
 
 function App() {
-
-  const [modalText, setModalText] = useState("");
-  const [modalVisible, setModalVisible] = useState(false);
+  const [modalTitle, setModalTitle] = useState("Welcome to Baseball at Cards");
+  const [modalText, setModalText] = useState(`<p>This is a card game where every hand you play is an at bat <strong>(AB)</strong> against a pitcher. Feel free to experiment with different actions in each AB and try to score as many runs as possible in <strong>3 innings</strong>. Here is a short description of every card.</p><ul><li><strong>Strike</strong>: The pitcher throws a strike, increasing your strike count, at <strong>3</strong> strikes <strong>you get an OUT</strong>.</li><li><strong>Ball</strong>: The pitcher throws a ball, increasing the ball count, at <strong>4</strong> balls <strong>you get on base</strong>.</li><li><strong>Swing</strong>: You swing at the next pitch, depending on the pitcher's stamina, you will me more or less likely to <strong>get a base hit</strong> or a <strong>ground out</strong>.</li><li><strong>Wild pitch</strong>: The pitcher throws a bad ball, <strong>allowing runners to advance</strong> and increasing the ball count.</li><li><strong>Hit by pitch</strong>: The pitcher hits you with the next pitch, <strong>you get on base</strong>.</li><li><strong>Home run</strong>: You hit the ball out of here! <strong>Your batter and everyone of your runners score</strong>.</li></ul>`);
+  const [modalMode, setModalMode] = useState("large");
+  const [modalVisible, setModalVisible] = useState(true);
   const [maxPitcherStamina, setMaxPitcherStamina] = useState(25);
   const [swingPower, setSwingPower] = useState(4);
   const [score, setScore] = useState(0);
@@ -40,6 +42,11 @@ function App() {
     }
   }, [pitcherStamina]);
 
+  const toggleModal = () => {
+    setModalVisible(!modalVisible);
+    if(hand.length === 0) dealHand();
+  };
+
   const shuffleDeck = (deck: string[]) => {
     for (let i = deck.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -49,7 +56,6 @@ function App() {
   }
 
   const dealHand = () => {
-    console.log("Dealing hand");
     setHand([...currentDeck.splice(0,6)]);
     if(currentDeck.length < 6){
       shuffleDeck(discard);
@@ -110,11 +116,19 @@ function App() {
       setCountBalls(countBalls+1);
       modifyStamina(-1);
     }else{
-      setModalText("Walk!");
+      setModalTitle("Walk!");
+      setModalText("")
+      setModalMode("small");
       setModalVisible(true);
       endTurn();
       if(bases[2]){
-        advanceRunners(true);
+        if(bases[0]){
+          let newBases = bases;
+          newBases[1] = true;
+          setBases(newBases);
+        }else{
+          advanceRunners(true);
+        }
       }else{
         let newBases = bases;
         newBases[2] = true;
@@ -128,7 +142,9 @@ function App() {
       setCountStrikes(countStrikes+1);
       modifyStamina(-1);
     }else{
-      setModalText("Strikeout!");
+      setModalTitle("Strikeout!");
+      setModalText("")
+      setModalMode("small");
       setModalVisible(true);
       endTurn();
       setCountOuts(countOuts+1);
@@ -140,26 +156,35 @@ function App() {
   const swing = () => {
     var odds = Math.max((pitcherStamina / maxPitcherStamina), 0.33);
     var random = Math.random();
+    setModalText("")
+    setModalMode("small");
     if(random > odds){
       advanceRunners(true);
-      setModalText("Base hit!");
-      setModalVisible(true);
+      setModalTitle("Base hit!");
       endTurn();
     }else{
-      setModalText("Groundout!");
-      setModalVisible(true);
+      setModalTitle("Ground out!");
       endTurn();
       setCountOuts(countOuts+1)
       endInning();
     }
+    setModalVisible(true);
   }
 
   const hitByPitch = () => {
-    setModalText("Hit by pitch!");
+    setModalTitle("Hit by pitch!");
+    setModalText("")
+    setModalMode("small");
     setModalVisible(true);
     endTurn();
     if(bases[2]){
-      advanceRunners(true);
+      if(bases[0]){
+        let newBases = bases;
+        newBases[1] = true;
+        setBases(newBases);
+      }else{
+        advanceRunners(true);
+      }
     }else{
       let newBases = bases;
       newBases[2] = true;
@@ -178,7 +203,9 @@ function App() {
   }
 
   const homeRun = () => {
-    setModalText("HOME RUN!");
+    setModalTitle("HOME RUN!");
+    setModalText("")
+    setModalMode("small");
     setModalVisible(true);
     setScore(score + countRunners(bases) + 1);
     clearBases();
@@ -196,10 +223,22 @@ function App() {
   const endInning = () => {
     if(countOuts !== 0 && (countOuts + 1) % 3 === 0){
       setCountOuts(0);
+      if(inning === 3) {
+        endGame();
+        return;
+      }
       setInning(inning+1);
       clearBases();
       modifyStamina(5);
     }
+  }
+
+  const endGame = () => {
+    setModalTitle("Game over!");
+    setModalText("You scored " + score + (score === 1 ? "run" : " runs."))
+    setModalMode("small");
+    setModalVisible(true);
+    resetState();
   }
 
   const playCard = (card: string, index: number) => {
@@ -233,9 +272,9 @@ function App() {
 
   return (
     <div className="App">
+      <Modal title={modalTitle} content={modalText} mode={modalMode} isOpen={modalVisible} toggleModal={toggleModal}/>
       <div className="BbaC-body">
         <ScoreBoard score={score} pitcherStamina={pitcherStamina} balls={countBalls} strikes={countStrikes} outs={countOuts} inning={inning} bases={bases}></ScoreBoard>
-        <button className="deal" onClick={()=> dealHand()}>Deal hand</button>
         <DisplayHand playCard={playCard} hand={hand}></DisplayHand>
         <DeckInfo currentDeck={currentDeck.length} discard={discard.length} hand={hand.length}></DeckInfo>
       </div>
