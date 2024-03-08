@@ -14,8 +14,8 @@ interface Props{
 const ScoreBoard = (props:Props) => {
     return (
         <div className="scoreBug">
-            <div className="">
-                <p>Score {props.score}</p>
+            <div className="score">
+                <p>Score: {props.score}</p>
                 <p>Stamina: {props.pitcherStamina}</p>
             </div>
             <div className="countBug">

@@ -5,9 +5,9 @@ interface Props{
 
 const DisplayHand = (props:Props) => {
     return (
-        <div>
+        <div className="hand">
             {props.hand.map((card, index) => (
-                <button key={index} onClick={() => props.playCard(card, index)}>
+                <button className="hand-card" key={index} onClick={() => props.playCard(card, index)}>
                     {card}
                 </button>
                 ))}

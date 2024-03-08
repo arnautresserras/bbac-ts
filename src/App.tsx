@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import './App.css';
 import DisplayHand from './components/DisplayHand/DisplayHand';
 import ScoreBoard from './components/ScoreBoard/ScoreBoard';
+import DeckInfo from './components/DeckInfo/DeckInfo';
 
 function App() {
 
@@ -232,19 +233,11 @@ function App() {
 
   return (
     <div className="App">
-      <button onClick={()=> dealHand()}>Deal hand</button>
-      <div>
-        {/*<AdminControls modalVisible={modalVisible} setModalVisible={setModalVisible} ></AdminControls>*/}
-        <div >
-          <ScoreBoard score={score} pitcherStamina={pitcherStamina} balls={countBalls} strikes={countStrikes} outs={countOuts} inning={inning} bases={bases}></ScoreBoard>
-        </div>
-        <div>
-          <p>Cards in deck: {currentDeck.length}</p>
-          <p>Cards in discard: {discard.length}</p>
-          <p>Cards in hand: {hand.length}</p>
-          <p>Total cards: {currentDeck.length + discard.length + hand.length}</p>
-        </div>
+      <div className="BbaC-body">
+        <ScoreBoard score={score} pitcherStamina={pitcherStamina} balls={countBalls} strikes={countStrikes} outs={countOuts} inning={inning} bases={bases}></ScoreBoard>
+        <button className="deal" onClick={()=> dealHand()}>Deal hand</button>
         <DisplayHand playCard={playCard} hand={hand}></DisplayHand>
+        <DeckInfo currentDeck={currentDeck.length} discard={discard.length} hand={hand.length}></DeckInfo>
       </div>
     </div>
   );
