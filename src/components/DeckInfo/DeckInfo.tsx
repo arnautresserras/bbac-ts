@@ -10,13 +10,13 @@ const BasesBug = (props:Props) => {
     return (
         <div className="deckInfo">
             <div className="deckInfo-detail">
-                <GiCardDraw /> {props.currentDeck}
+                <GiCardDraw /> {props.currentDeck} <span>Deck</span>
             </div>
             <div className="deckInfo-detail">
-                <GiCardPick /> {props.hand}
+                <GiCardPick /> {props.hand} <span>Hand</span>
             </div>
             <div className="deckInfo-detail">
-                <GiCardDiscard /> {props.discard}
+                <GiCardDiscard /> {props.discard} <span>Discard</span>
             </div>
         </div>
     )
