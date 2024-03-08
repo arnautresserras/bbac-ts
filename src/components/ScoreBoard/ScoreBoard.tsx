@@ -17,7 +17,7 @@ const ScoreBoard = (props:Props) => {
     return (
         <div className="scoreBug">
             <div className="score">
-                <p>Score: {props.score}</p>
+                <p className="score-runs">{props.score}</p>
                 <StaminaBar stamina={props.pitcherStamina}></StaminaBar>
             </div>
             <div className="countBug">
