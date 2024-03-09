@@ -11,6 +11,7 @@ interface Props{
     bases: boolean[];
     score: number;
     pitcherStamina: number;
+    maxPitcherStamina: number;
 }
 
 const ScoreBoard = (props:Props) => {
@@ -18,7 +19,7 @@ const ScoreBoard = (props:Props) => {
         <div className="scoreBug">
             <div className="score">
                 <p className="score-runs">{props.score}</p>
-                <StaminaBar stamina={props.pitcherStamina}></StaminaBar>
+                <StaminaBar stamina={props.pitcherStamina} maxStamina={props.maxPitcherStamina}></StaminaBar>
             </div>
             <div className="countBug">
                 <div className="innings"><IoMdArrowDropup />{props.inning}</div>

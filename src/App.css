@@ -96,13 +96,13 @@ button{
   height: 20px;
   background-color: #111;
   border-radius: 4px;
-  transition: all 1s linear;
+  transition: background-color .1s linear;
 }
 .staminaBug .staminaFill.decrease{
-  background-color: red;
+  background-color: #cf0000;
 }
 .staminaBug .staminaFill.increase{
-  background-color: green;
+  background-color: #0f8a32;
 }
 .countBug {
   flex-direction: row;
