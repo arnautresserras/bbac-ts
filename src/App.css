@@ -84,6 +84,26 @@ button{
   font-size: 2rem;
   text-align: center;
 }
+.staminaBug {
+
+}
+.staminaBug .staminaBackground {
+  width: 100%;
+  background-color: #d5d5d5;
+  border-radius: 4px;
+}
+.staminaBug .staminaFill{
+  height: 20px;
+  background-color: #111;
+  border-radius: 4px;
+  transition: all 1s linear;
+}
+.staminaBug .staminaFill.decrease{
+  background-color: red;
+}
+.staminaBug .staminaFill.increase{
+  background-color: green;
+}
 .countBug {
   flex-direction: row;
   justify-content: space-evenly;

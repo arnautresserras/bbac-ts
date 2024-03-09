@@ -16,7 +16,7 @@ const BasesBug = (props:Props) => {
                 <GiCardPick /> {props.hand} <span>Hand</span>
             </div>
             <div className="deckInfo-detail">
-                <GiCardDiscard /> {props.discard} <span>Discard</span>
+                <GiCardDiscard /> {props.discard} <span>Used</span>
             </div>
         </div>
     )
