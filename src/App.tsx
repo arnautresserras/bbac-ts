@@ -67,6 +67,10 @@ function App() {
   const newPitcher = () => {
     setMaxPitcherStamina(15);
     setPitcherStamina(10);
+    setModalTitle("New pitcher!");
+    setModalText("")
+    setModalMode("small");
+    setModalVisible(true);
   }
 
   const modifyStamina = (ammount: number) => {
@@ -275,7 +279,7 @@ function App() {
     <div className="App">
       <Modal title={modalTitle} content={modalText} mode={modalMode} isOpen={modalVisible} toggleModal={toggleModal}/>
       <div className="BbaC-body">
-        <ScoreBoard score={score} pitcherStamina={pitcherStamina} balls={countBalls} strikes={countStrikes} outs={countOuts} inning={inning} bases={bases}></ScoreBoard>
+        <ScoreBoard score={score} pitcherStamina={pitcherStamina} maxPitcherStamina={maxPitcherStamina} balls={countBalls} strikes={countStrikes} outs={countOuts} inning={inning} bases={bases}></ScoreBoard>
         <DisplayHand playCard={playCard} hand={hand}></DisplayHand>
         <DeckInfo currentDeck={currentDeck.length} discard={discard.length} hand={hand.length}></DeckInfo>
       </div>
