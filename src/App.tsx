@@ -126,18 +126,22 @@ function App() {
       setModalMode("small");
       setModalVisible(true);
       endTurn();
-      if(bases[2]){
-        if(bases[0]){
-          let newBases = bases;
-          newBases[1] = true;
-          setBases(newBases);
+      if(bases.includes(false)){
+        if(bases[2]){
+          if(bases[0]){
+            let newBases = bases;
+            newBases[1] = true;
+            setBases(newBases);
+          }else{
+            advanceRunners(true);
+          }
         }else{
-          advanceRunners(true);
+          let newBases = bases;
+          newBases[2] = true;
+          setBases(newBases);
         }
       }else{
-        let newBases = bases;
-        newBases[2] = true;
-        setBases(newBases);
+        advanceRunners(true);
       }
     }
   };
@@ -182,18 +186,22 @@ function App() {
     setModalMode("small");
     setModalVisible(true);
     endTurn();
-    if(bases[2]){
-      if(bases[0]){
-        let newBases = bases;
-        newBases[1] = true;
-        setBases(newBases);
+    if(bases.includes(false)){
+      if(bases[2]){
+        if(bases[0]){
+          let newBases = bases;
+          newBases[1] = true;
+          setBases(newBases);
+        }else{
+          advanceRunners(true);
+        }
       }else{
-        advanceRunners(true);
+        let newBases = bases;
+        newBases[2] = true;
+        setBases(newBases);
       }
     }else{
-      let newBases = bases;
-      newBases[2] = true;
-      setBases(newBases);
+      advanceRunners(true);
     }
   }
 
