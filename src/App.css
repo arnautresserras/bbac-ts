@@ -166,6 +166,11 @@ button{
   padding: 5px;
   font-size: 1.2rem;
 }
+.empty-card{
+  width: 40%;
+  height: 34px;
+  margin: 5px;
+}
 .deckInfo{
   margin-top: auto;
   justify-self: flex-end;

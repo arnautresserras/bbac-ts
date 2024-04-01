@@ -7,10 +7,15 @@ const DisplayHand = (props:Props) => {
     return (
         <div className="hand">
             {props.hand.map((card, index) => (
-                <button className="hand-card" key={index} onClick={() => props.playCard(card, index)}>
+                card.trim() !== "" ? (
+                    <button className="hand-card" key={index} onClick={() => props.playCard(card, index)}>
                     {card}
-                </button>
-                ))}
+                    </button>
+                ) : (
+                    <div className="empty-card" key={index}>
+                    </div>
+                )
+            ))}
         </div>
     )
 }
