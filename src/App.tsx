@@ -6,11 +6,16 @@ import DeckInfo from './components/DeckInfo/DeckInfo';
 import Modal from './components/Modal/Modal';
 
 function App() {
+  //Welcome text
   const tips = "<ul><li><strong>AB</strong>: Every <strong>AB</strong> you draw <strong>6 cards</strong> from your deck. Both cards you play, and unused cards go to the discard pile. Once your deck is empty, your discard pile will be shuffled and become your deck again.</li><li><strong>Pitcher stamina</strong>: The pitcher's stamina determines how likely you are to get a hit when you <strong>Swing</strong>. <strong>Using cards decreases</strong> pitcher stamina, while <strong>unused cards or strikeouts increase it</strong>. If the pitcher's stamina <strong>reaches 0</strong>, a reliever will come in <strong>at 50% stamina</strong>.</li><li><strong>Strike</strong>: The pitcher throws a strike, increasing your strike count, at <strong>3</strong> strikes <strong>you get an OUT</strong>.</li><li><strong>Ball</strong>: The pitcher throws a ball, increasing the ball count, at <strong>4</strong> balls <strong>you get on base</strong>.</li><li><strong>Swing</strong>: You swing at the next pitch, depending on the pitcher's stamina, you will be more or less likely to <strong>get a base hit</strong> or a <strong>ground out</strong>.</li><li><strong>Wild pitch</strong>: The pitcher throws a bad ball, <strong>allowing runners to advance</strong> and increasing the ball count.</li><li><strong>Hit by pitch</strong>: The pitcher hits you with the next pitch, <strong>you get on base</strong>.</li><li><strong>Home run</strong>: You hit the ball out of here! <strong>Your batter and every one of your runners score</strong>.</li></ul>";
+  
+  //Modal State
   const [modalTitle, setModalTitle] = useState("Welcome to Baseball at Cards");
   const [modalText, setModalText] = useState("<p>This is a card game where every hand you play is an at bat <strong>(AB)</strong> against a pitcher. Feel free to experiment with different actions in each AB and try to score as many runs as possible in <strong>3 innings</strong> (9 outs). Here are some gameplay tips:</p>"+tips);
   const [modalMode, setModalMode] = useState("large");
   const [modalVisible, setModalVisible] = useState(true);
+
+  //Game variables
   const [maxPitcherStamina, setMaxPitcherStamina] = useState(25);
   const [swingPower, setSwingPower] = useState(4);
   const [score, setScore] = useState(0);
@@ -20,12 +25,27 @@ function App() {
   const [countOuts, setCountOuts] = useState(0);
   const [inning, setInning] = useState(1);
   const [bases, setBases] = useState([false,false,false]);
+
+  //Card variables
   const [hand, setHand] = useState<string[]>([]);
   const [baseDeck, setBaseDeck] = useState([
     "Ball", "Ball", "Ball", "Ball", "Ball", "Ball", "Ball", "Ball", "Ball", "Ball", "Ball", "Ball", "Ball", "Ball", "Ball", "Ball", "Ball", "Ball", "Ball", "Strike", "Strike", "Strike", "Strike", "Strike", "Strike", "Strike", "Strike", "Strike", "Strike", "Strike", "Strike", "Strike", "Strike", "Swing", "Swing", "Swing", "Swing", "Swing", "Swing", "Swing", "Swing", "Swing", "Swing", "Swing", "Swing", "Swing", "Swing", "Swing", "Hit by pitch", "Hit by pitch", "Wild pitch", "Wild pitch", "Home run", "Home run"
   ]);
   const [currentDeck, setCurrentDeck] = useState<string[]>([]);
   const [discard, setDiscard] = useState<string[]>([]);
+
+  //Stats variables
+  const [h, setH] = useState(0);
+  const [ab, setAB] = useState(0);
+  const [bb, setBB] = useState(0);
+  const [hbp, setHBP] = useState(0);
+  const [hr, setHR] = useState(0);
+
+  //Stats calculats
+  const [avg, setAVG] = useState(0);
+  const [obp, setOBP] = useState(0);
+  const [slg, setSLG] = useState(0);
+  const [ops, setOPS] = useState(0);
 
   const firstUpdate = useRef(true);
   useEffect(() => {
@@ -36,6 +56,10 @@ function App() {
       return;
     }
   });
+
+  useEffect(() => {
+    processStats();
+  }, [h, bb, hbp, hr, ab, obp, slg])
 
   useEffect(() => {
     if (pitcherStamina === 0) {
@@ -92,6 +116,26 @@ function App() {
     setCountStrikes(0);
   }
 
+  const resetStats = () => {
+    setH(0);
+    setAB(0);
+    setBB(0);
+    setHBP(0);
+    setHR(0);
+  }
+
+  const processStats = () => {
+    setAVG(ab !== 0 ? h/ab : 0);
+    setOBP((ab + bb + hbp) !== 0 ? (h + bb + hbp)/(ab + bb + hbp) : 0);
+    setSLG(ab !== 0 ? (h + hr * 3)/ab : 0);
+    setOPS(obp + slg);
+  }
+
+  // Custom formatting function to remove leading zero
+  const formatStat = (num: number): string => {
+    const formatted = num.toFixed(3); // Set the desired decimal places (e.g., 3)
+    return formatted.replace(/^0\./, '.'); // Remove leading zero if present
+  };
 
   const resetState = () => {
     setScore(0);
@@ -104,6 +148,7 @@ function App() {
     setHand([]);
     shuffleDeck(baseDeck)
     setDiscard([]);
+    resetStats();
   }
 
   const advanceRunners = (newRunner: boolean) => {
@@ -125,6 +170,7 @@ function App() {
       setModalText("")
       setModalMode("small");
       setModalVisible(true);
+      setBB((prevBB) => prevBB + 1);
       endTurn();
       if(bases.includes(false)){
         if(bases[2]){
@@ -155,6 +201,7 @@ function App() {
       setModalText("")
       setModalMode("small");
       setModalVisible(true);
+      setAB((prevAB) => prevAB + 1);
       endTurn();
       setCountOuts(countOuts+1);
       endInning();
@@ -167,7 +214,9 @@ function App() {
     var random = Math.random();
     setModalText("")
     setModalMode("small");
+    setAB((prevAB) => prevAB + 1);
     if(random > odds){
+      setH((prevH) => prevH + 1);
       advanceRunners(true);
       setModalTitle("Base hit!");
       endTurn();
@@ -185,6 +234,7 @@ function App() {
     setModalText("")
     setModalMode("small");
     setModalVisible(true);
+    setHBP((prevHBP) => prevHBP + 1);
     endTurn();
     if(bases.includes(false)){
       if(bases[2]){
@@ -220,6 +270,9 @@ function App() {
     setModalText("")
     setModalMode("small");
     setModalVisible(true);
+    setH((prevH) => prevH + 1);
+    setHR((prevHR) => prevHR + 1);
+    setAB((prevAB) => prevAB + 1);
     setScore(score + countRunners(bases) + 1);
     clearBases();
     endTurn();
@@ -227,10 +280,12 @@ function App() {
   }
 
   const endTurn = () => {
-    discard.push.apply(discard, hand);
-    modifyStamina(hand.length-1);
+    let usableHand = hand.filter((item) => item.trim() !== "");
+    discard.push.apply(discard, usableHand);
+    modifyStamina(usableHand.length-1);
     resetCount();
     setHand([]);
+    processStats();
   }
 
   const endInning = () => {
@@ -256,7 +311,7 @@ function App() {
 
   const playCard = (card: string, index: number) => {
     let newHand = hand;
-    let discardedCard = newHand.splice(index,1);
+    let discardedCard = newHand.splice(index,1,"");
     discard.push(...discardedCard);
     setHand(newHand);
     switch (card){
@@ -290,6 +345,12 @@ function App() {
         <ScoreBoard score={score} pitcherStamina={pitcherStamina} maxPitcherStamina={maxPitcherStamina} balls={countBalls} strikes={countStrikes} outs={countOuts} inning={inning} bases={bases}></ScoreBoard>
         <DisplayHand playCard={playCard} hand={hand}></DisplayHand>
         <DeckInfo currentDeck={currentDeck.length} discard={discard.length} hand={hand.length}></DeckInfo>
+        <div>
+          avg: {formatStat(avg)}<br></br>
+          obp: {formatStat(obp)}<br></br>
+          slg: {formatStat(slg)}<br></br>
+          ops: {formatStat(ops)}
+        </div>
       </div>
     </div>
   );
