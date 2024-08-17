@@ -148,6 +148,7 @@ function App() {
     setHand([]);
     shuffleDeck(baseDeck)
     setDiscard([]);
+    
     resetStats();
   }
 
@@ -345,12 +346,6 @@ function App() {
         <ScoreBoard score={score} pitcherStamina={pitcherStamina} maxPitcherStamina={maxPitcherStamina} balls={countBalls} strikes={countStrikes} outs={countOuts} inning={inning} bases={bases}></ScoreBoard>
         <DisplayHand playCard={playCard} hand={hand}></DisplayHand>
         <DeckInfo currentDeck={currentDeck.length} discard={discard.length} hand={hand.length}></DeckInfo>
-        <div>
-          avg: {formatStat(avg)}<br></br>
-          obp: {formatStat(obp)}<br></br>
-          slg: {formatStat(slg)}<br></br>
-          ops: {formatStat(ops)}
-        </div>
       </div>
     </div>
   );
