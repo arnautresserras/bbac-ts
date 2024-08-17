@@ -21,6 +21,9 @@
   overflow-y: scroll;
   border-radius: 5px;
 }
+.modal.small{
+  overflow-y: auto;
+}
 .modal.large{
   width: 60vw;
   height: 75vh;
