@@ -4,6 +4,8 @@ import DisplayHand from './components/DisplayHand/DisplayHand';
 import ScoreBoard from './components/ScoreBoard/ScoreBoard';
 import DeckInfo from './components/DeckInfo/DeckInfo';
 import Modal from './components/Modal/Modal';
+import { BatterStats } from './interfaces/BatterStats';
+import DisplayLineupStats from './components/LineupStats/DisplayLineupStats';
 
 function App() {
   //Welcome text
@@ -35,17 +37,19 @@ function App() {
   const [discard, setDiscard] = useState<string[]>([]);
 
   //Stats variables
-  const [h, setH] = useState(0);
-  const [ab, setAB] = useState(0);
-  const [bb, setBB] = useState(0);
-  const [hbp, setHBP] = useState(0);
-  const [hr, setHR] = useState(0);
-
-  //Stats calculats
-  const [avg, setAVG] = useState(0);
-  const [obp, setOBP] = useState(0);
-  const [slg, setSLG] = useState(0);
-  const [ops, setOPS] = useState(0);
+  const initialLineupStats: BatterStats[] = [
+    { id: 1, plateAppearance: 1,atBats: 0, hits: 0, walks: 0, hitByPitch: 0, homeRuns: 0 },
+    { id: 2, plateAppearance: 0,atBats: 0, hits: 0, walks: 0, hitByPitch: 0, homeRuns: 0 },
+    { id: 3, plateAppearance: 0,atBats: 0, hits: 0, walks: 0, hitByPitch: 0, homeRuns: 0 },
+    { id: 4, plateAppearance: 0,atBats: 0, hits: 0, walks: 0, hitByPitch: 0, homeRuns: 0 },
+    { id: 5, plateAppearance: 0,atBats: 0, hits: 0, walks: 0, hitByPitch: 0, homeRuns: 0 },
+    { id: 6, plateAppearance: 0,atBats: 0, hits: 0, walks: 0, hitByPitch: 0, homeRuns: 0 },
+    { id: 7, plateAppearance: 0,atBats: 0, hits: 0, walks: 0, hitByPitch: 0, homeRuns: 0 },
+    { id: 8, plateAppearance: 0,atBats: 0, hits: 0, walks: 0, hitByPitch: 0, homeRuns: 0 },
+    { id: 9, plateAppearance: 0,atBats: 0, hits: 0, walks: 0, hitByPitch: 0, homeRuns: 0 }
+  ];
+  const [lineupStats, setLineupStats] = useState<BatterStats[]>(initialLineupStats);
+  const [currentBatter, setCurrentBatter] = useState(0);
 
   const firstUpdate = useRef(true);
   useEffect(() => {
@@ -56,10 +60,6 @@ function App() {
       return;
     }
   });
-
-  useEffect(() => {
-    processStats();
-  }, [h, bb, hbp, hr, ab, obp, slg])
 
   useEffect(() => {
     if (pitcherStamina === 0) {
@@ -116,25 +116,24 @@ function App() {
     setCountStrikes(0);
   }
 
+  const updateLineupStat = (id: number, stat: keyof BatterStats, value: number) => {
+    setLineupStats((prevStats) =>
+      prevStats.map((player, index) =>
+        index === id ? { ...player, [stat]: player[stat] + value } : player
+      )
+    );
+  };
+
   const resetStats = () => {
-    setH(0);
-    setAB(0);
-    setBB(0);
-    setHBP(0);
-    setHR(0);
+    setLineupStats(initialLineupStats);
   }
 
-  const processStats = () => {
-    setAVG(ab !== 0 ? h/ab : 0);
-    setOBP((ab + bb + hbp) !== 0 ? (h + bb + hbp)/(ab + bb + hbp) : 0);
-    setSLG(ab !== 0 ? (h + hr * 3)/ab : 0);
-    setOPS(obp + slg);
-  }
-
-  // Custom formatting function to remove leading zero
-  const formatStat = (num: number): string => {
-    const formatted = num.toFixed(3); // Set the desired decimal places (e.g., 3)
-    return formatted.replace(/^0\./, '.'); // Remove leading zero if present
+  const nextBatter = () => {
+    setCurrentBatter((previousBatter) => {
+        const newBatter = (previousBatter + 1) % 9;
+        updateLineupStat(newBatter, 'plateAppearance', 1);
+        return newBatter;
+    });
   };
 
   const resetState = () => {
@@ -171,7 +170,7 @@ function App() {
       setModalText("")
       setModalMode("small");
       setModalVisible(true);
-      setBB((prevBB) => prevBB + 1);
+      updateLineupStat(currentBatter, 'walks', 1);
       endTurn();
       if(bases.includes(false)){
         if(bases[2]){
@@ -202,7 +201,7 @@ function App() {
       setModalText("")
       setModalMode("small");
       setModalVisible(true);
-      setAB((prevAB) => prevAB + 1);
+      updateLineupStat(currentBatter, 'atBats', 1);
       endTurn();
       setCountOuts(countOuts+1);
       endInning();
@@ -215,9 +214,9 @@ function App() {
     var random = Math.random();
     setModalText("")
     setModalMode("small");
-    setAB((prevAB) => prevAB + 1);
+    updateLineupStat(currentBatter, 'atBats', 1);
     if(random > odds){
-      setH((prevH) => prevH + 1);
+      updateLineupStat(currentBatter, 'hits', 1);
       advanceRunners(true);
       setModalTitle("Base hit!");
       endTurn();
@@ -235,7 +234,7 @@ function App() {
     setModalText("")
     setModalMode("small");
     setModalVisible(true);
-    setHBP((prevHBP) => prevHBP + 1);
+    updateLineupStat(currentBatter, 'hitByPitch', 1);
     endTurn();
     if(bases.includes(false)){
       if(bases[2]){
@@ -271,9 +270,9 @@ function App() {
     setModalText("")
     setModalMode("small");
     setModalVisible(true);
-    setH((prevH) => prevH + 1);
-    setHR((prevHR) => prevHR + 1);
-    setAB((prevAB) => prevAB + 1);
+    updateLineupStat(currentBatter, 'hits', 1);
+    updateLineupStat(currentBatter, 'homeRuns', 1);
+    updateLineupStat(currentBatter, 'atBats', 1);
     setScore(score + countRunners(bases) + 1);
     clearBases();
     endTurn();
@@ -281,12 +280,12 @@ function App() {
   }
 
   const endTurn = () => {
+    nextBatter();
     let usableHand = hand.filter((item) => item.trim() !== "");
     discard.push.apply(discard, usableHand);
     modifyStamina(usableHand.length-1);
     resetCount();
     setHand([]);
-    processStats();
   }
 
   const endInning = () => {
@@ -345,6 +344,7 @@ function App() {
       <div className="BbaC-body">
         <ScoreBoard score={score} pitcherStamina={pitcherStamina} maxPitcherStamina={maxPitcherStamina} balls={countBalls} strikes={countStrikes} outs={countOuts} inning={inning} bases={bases}></ScoreBoard>
         <DisplayHand playCard={playCard} hand={hand}></DisplayHand>
+        <DisplayLineupStats lineupStats={lineupStats} currentBatter={currentBatter}></DisplayLineupStats>
         <DeckInfo currentDeck={currentDeck.length} discard={discard.length} hand={hand.length}></DeckInfo>
       </div>
     </div>
