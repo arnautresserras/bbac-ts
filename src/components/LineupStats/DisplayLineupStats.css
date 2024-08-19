@@ -35,13 +35,3 @@
     color: #fff;
     background-color: #000!important;
 }
-  
-@media (max-width: 600px) {
-    .table-container {
-      grid-template-columns: 1fr;
-    }
-  
-    .table-header div, .table-row div {
-      text-align: left;
-    }
-}
