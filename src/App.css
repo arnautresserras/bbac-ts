@@ -48,7 +48,6 @@
   margin: 1rem auto;
 }
 .modal button{
-  font-size: 1.2rem;
   margin: auto 0 0 0;
 }
 button{
@@ -58,6 +57,10 @@ button{
   border-radius: 5px;
   box-shadow: none;
   padding: .5rem 1rem;
+  font-size: 1.2rem;
+}
+.statsButton {
+  align-self: center;
 }
 .BbaC-body {
   display: flex;

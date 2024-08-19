@@ -62,9 +62,9 @@ const DisplayLineupStats = (props:Props) => {
             {props.lineupStats.map((batter, index) => (
                 <div className="table-row" key={batter.id}>
                     <div className={props.currentBatter === index ? 'leading-stat' : ''}>
-                        {props.currentBatter === index ? '> ' : ''}
+                        {props.currentBatter === index ? '>' : ''}
                         {batter.id}
-                        {props.currentBatter === index ? ' <' : ''}
+                        {props.currentBatter === index ? '<' : ''}
                     </div>
                     <div className={batter.plateAppearance === maxStats.plateAppearance ? 'leading-stat' : ''}>{batter.plateAppearance}</div>
                     <div className={batter.atBats === maxStats.atBats ? 'leading-stat' : ''}>{batter.atBats}</div>

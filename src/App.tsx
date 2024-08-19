@@ -50,6 +50,7 @@ function App() {
   ];
   const [lineupStats, setLineupStats] = useState<BatterStats[]>(initialLineupStats);
   const [currentBatter, setCurrentBatter] = useState(0);
+  const [showStats, setShowStats] = useState(false);
 
   const firstUpdate = useRef(true);
   useEffect(() => {
@@ -343,9 +344,17 @@ function App() {
       <Modal title={modalTitle} content={modalText} mode={modalMode} isOpen={modalVisible} toggleModal={toggleModal}/>
       <div className="BbaC-body">
         <ScoreBoard score={score} pitcherStamina={pitcherStamina} maxPitcherStamina={maxPitcherStamina} balls={countBalls} strikes={countStrikes} outs={countOuts} inning={inning} bases={bases}></ScoreBoard>
-        <DisplayHand playCard={playCard} hand={hand}></DisplayHand>
-        <DisplayLineupStats lineupStats={lineupStats} currentBatter={currentBatter}></DisplayLineupStats>
-        <DeckInfo currentDeck={currentDeck.length} discard={discard.length} hand={hand.length}></DeckInfo>
+        {!showStats ?
+          <>
+            <DisplayHand playCard={playCard} hand={hand}></DisplayHand>
+            <DeckInfo currentDeck={currentDeck.length} discard={discard.length} hand={hand.length}></DeckInfo>
+          </>
+          : null
+        }
+        {showStats && <DisplayLineupStats lineupStats={lineupStats} currentBatter={currentBatter}></DisplayLineupStats>}
+        <button className='statsButton' onClick={() => setShowStats(!showStats)}>
+          {showStats ? 'Hide' : 'Show'} Stats
+        </button>
       </div>
     </div>
   );
