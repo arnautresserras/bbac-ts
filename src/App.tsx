@@ -145,10 +145,10 @@ function App() {
     resetCount();
     clearBases();
     setCountOuts(0);
+    setCurrentBatter(0);
     setHand([]);
     shuffleDeck(baseDeck)
     setDiscard([]);
-    
     resetStats();
   }
 
