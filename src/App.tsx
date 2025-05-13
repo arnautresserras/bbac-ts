@@ -20,15 +20,24 @@ function App() {
   );
   const [modalMode, setModalMode] = useState("large");
   const [modalVisible, setModalVisible] = useState(true);
-  const [modalCloseText, setModalCloseText] = useState("Close");
+  const [modalCloseText, setModalCloseText] = useState("Start");
   const [modalOnClose, setModalOnClose] = useState<(() => void) | undefined>(undefined);
   const [modalSecondaryActionText, setModalSecondaryActionText] = useState<string | undefined>();
   const [modalOnSecondaryAction, setModalOnSecondaryAction] = useState<(() => void) | undefined>(undefined);
+  const [modalFirstTips, setModalFirstTips] = useState(true);
   const toggleModal = () => {
-    setModalVisible(!modalVisible);
-    if (hand.length === 0) {
+    if(modalFirstTips){
+      setModalVisible(!modalVisible);
       dealHand();
-      nextBatter();
+      updateLineupStat(currentBatter, "plateAppearance", 1);
+      setModalFirstTips(false);
+      setModalCloseText("Close");
+    }else{
+      setModalVisible(!modalVisible);
+      if (hand.length === 0) {
+        dealHand();
+        nextBatter();
+      }
     }
   };
 
@@ -109,7 +118,7 @@ function App() {
   const initialLineupStats: BatterStats[] = [
     {
       id: 1,
-      plateAppearance: 1,
+      plateAppearance: 0,
       atBats: 0,
       hits: 0,
       walks: 0,
@@ -189,8 +198,7 @@ function App() {
       homeRuns: 0,
     },
   ];
-  const [lineupStats, setLineupStats] =
-    useState<BatterStats[]>(initialLineupStats);
+  const [lineupStats, setLineupStats] = useState<BatterStats[]>(initialLineupStats);
   const [currentBatter, setCurrentBatter] = useState(0);
   const [showStats, setShowStats] = useState(false);
 
@@ -449,7 +457,7 @@ function App() {
 
   const endInning = () => {
     if (countOuts !== 0 && (countOuts + 1) % 3 === 0) {
-      if (inning === 1) {
+      if (inning === 3) {
         endGame();
         return;
       }
