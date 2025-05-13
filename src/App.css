@@ -21,6 +21,11 @@
   overflow-y: scroll;
   border-radius: 5px;
 }
+.modal-buttons{
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
 .modal.small{
   overflow-y: auto;
 }
