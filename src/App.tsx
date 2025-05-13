@@ -16,10 +16,11 @@ function App() {
   const [modalText, setModalText] = useState("<p>This is a card game where every hand you play is an at bat <strong>(AB)</strong> against a pitcher. Feel free to experiment with different actions in each AB and try to score as many runs as possible in <strong>3 innings</strong> (9 outs). Here are some gameplay tips:</p>"+tips);
   const [modalMode, setModalMode] = useState("large");
   const [modalVisible, setModalVisible] = useState(true);
+  const [modalOnClose, setModalOnClose] = useState<(() => void) | undefined>(undefined);
 
   //Game variables
   const [maxPitcherStamina, setMaxPitcherStamina] = useState(25);
-  const [swingPower, setSwingPower] = useState(4);
+  //const [swingPower, setSwingPower] = useState(4);
   const [score, setScore] = useState(0);
   const [pitcherStamina, setPitcherStamina] = useState(20);
   const [countBalls, setCountBalls] = useState(0);
@@ -150,6 +151,7 @@ function App() {
     shuffleDeck(baseDeck)
     setDiscard([]);
     resetStats();
+    setModalOnClose(undefined);
   }
 
   const advanceRunners = (newRunner: boolean) => {
@@ -291,11 +293,11 @@ function App() {
 
   const endInning = () => {
     if(countOuts !== 0 && (countOuts + 1) % 3 === 0){
-      setCountOuts(0);
       if(inning === 3) {
         endGame();
         return;
       }
+      setCountOuts(0);
       setInning(inning+1);
       clearBases();
       modifyStamina(5);
@@ -307,7 +309,7 @@ function App() {
     setModalText("You scored " + score + (score === 1 ? "run" : " runs."))
     setModalMode("small");
     setModalVisible(true);
-    resetState();
+    setModalOnClose(() => resetState);
   }
 
   const playCard = (card: string, index: number) => {
@@ -341,7 +343,14 @@ function App() {
 
   return (
     <div className="App">
-      <Modal title={modalTitle} content={modalText} mode={modalMode} isOpen={modalVisible} toggleModal={toggleModal}/>
+      <Modal 
+        title={modalTitle}
+        content={modalText}
+        mode={modalMode}
+        isOpen={modalVisible}
+        toggleModal={toggleModal}
+        onClose={modalOnClose}
+      />
       <div className="BbaC-body">
         <ScoreBoard score={score} pitcherStamina={pitcherStamina} maxPitcherStamina={maxPitcherStamina} balls={countBalls} strikes={countStrikes} outs={countOuts} inning={inning} bases={bases}></ScoreBoard>
         {!showStats ?
