@@ -21,6 +21,11 @@
   overflow-y: scroll;
   border-radius: 5px;
 }
+.modal-buttons{
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
 .modal.small{
   overflow-y: auto;
 }
@@ -177,6 +182,7 @@ button{
   transition: transform 0.2s, box-shadow 0.2s;
   cursor: pointer;
   width: 36%;
+  max-width: 280px;
   aspect-ratio: 1;
   margin: 5px;
   padding: 5px;
@@ -204,6 +210,7 @@ button{
 }
 .empty-card{
   width: 36%;
+  max-width: 280px;
   aspect-ratio: 1;
   margin: 5px;
 }

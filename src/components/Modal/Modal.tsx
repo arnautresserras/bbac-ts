@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import parse from 'html-react-parser';
+import React, { useState } from "react";
+import parse from "html-react-parser";
 
 interface ModalProps {
   title: string;
@@ -7,24 +7,58 @@ interface ModalProps {
   mode: string;
   isOpen: boolean;
   toggleModal: () => void;
+  primaryActionText: string;
+  onClose?: () => void;
+  secondaryActionText?: string;
+  onSecondaryAction?: () => void;
 }
 
-const Modal: React.FC<ModalProps> = ({ title, content, mode, isOpen, toggleModal  }) => {
+const Modal: React.FC<ModalProps> = ({
+  title,
+  content,
+  mode,
+  isOpen,
+  toggleModal,
+  primaryActionText,
+  onClose,
+  secondaryActionText,
+  onSecondaryAction,
+}) => {
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    }
+    toggleModal();
+  };
+
   return (
     <div>
-
       {isOpen && (
         <div className={"modal " + mode}>
           <h2>{title}</h2>
           <p className="body">{parse(content)}</p>
-          <button onClick={toggleModal}>
-            Close
-          </button>
+          <div className="modal-buttons">
+            <button onClick={handleClose}>{primaryActionText}</button>
+            {secondaryActionText && (
+              <button onClick={onSecondaryAction}>{secondaryActionText}</button>
+            )}
+          </div>
         </div>
       )}
 
       {isOpen && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0, 0, 0, 0.3)', zIndex: 999 }} onClick={toggleModal} />
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0, 0, 0, 0.3)",
+            zIndex: 999,
+          }}
+          onClick={handleClose}
+        />
       )}
     </div>
   );
