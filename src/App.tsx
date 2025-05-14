@@ -8,6 +8,8 @@ import { BatterStats } from "./interfaces/BatterStats";
 import DisplayLineupStats from "./components/LineupStats/DisplayLineupStats";
 import { welcomeText } from "./data/gameTips";
 import { getStarterDeck } from "./data/starterDeck";
+import { initialLineupStats, resetStats, updateLineupStat } from "./logic/statsManager";
+import { shuffleDeck } from "./utils/shuffleDeck";
 
 function App() {
   //Modal State and key functions
@@ -20,21 +22,6 @@ function App() {
   const [modalSecondaryActionText, setModalSecondaryActionText] = useState<string | undefined>();
   const [modalOnSecondaryAction, setModalOnSecondaryAction] = useState<(() => void) | undefined>(undefined);
   const [modalFirstTips, setModalFirstTips] = useState(true);
-  const toggleModal = () => {
-    if(modalFirstTips){
-      setModalVisible(!modalVisible);
-      dealHand();
-      updateLineupStat(currentBatter, "plateAppearance", 1);
-      setModalFirstTips(false);
-      setModalCloseText("Close");
-    }else{
-      setModalVisible(!modalVisible);
-      if (hand.length === 0) {
-        dealHand();
-        nextBatter();
-      }
-    }
-  };
 
   //Game variables
   const [maxPitcherStamina, setMaxPitcherStamina] = useState(25);
@@ -54,89 +41,6 @@ function App() {
   const [discard, setDiscard] = useState<string[]>([]);
 
   //Stats variables
-  const initialLineupStats: BatterStats[] = [
-    {
-      id: 1,
-      plateAppearance: 0,
-      atBats: 0,
-      hits: 0,
-      walks: 0,
-      hitByPitch: 0,
-      homeRuns: 0,
-    },
-    {
-      id: 2,
-      plateAppearance: 0,
-      atBats: 0,
-      hits: 0,
-      walks: 0,
-      hitByPitch: 0,
-      homeRuns: 0,
-    },
-    {
-      id: 3,
-      plateAppearance: 0,
-      atBats: 0,
-      hits: 0,
-      walks: 0,
-      hitByPitch: 0,
-      homeRuns: 0,
-    },
-    {
-      id: 4,
-      plateAppearance: 0,
-      atBats: 0,
-      hits: 0,
-      walks: 0,
-      hitByPitch: 0,
-      homeRuns: 0,
-    },
-    {
-      id: 5,
-      plateAppearance: 0,
-      atBats: 0,
-      hits: 0,
-      walks: 0,
-      hitByPitch: 0,
-      homeRuns: 0,
-    },
-    {
-      id: 6,
-      plateAppearance: 0,
-      atBats: 0,
-      hits: 0,
-      walks: 0,
-      hitByPitch: 0,
-      homeRuns: 0,
-    },
-    {
-      id: 7,
-      plateAppearance: 0,
-      atBats: 0,
-      hits: 0,
-      walks: 0,
-      hitByPitch: 0,
-      homeRuns: 0,
-    },
-    {
-      id: 8,
-      plateAppearance: 0,
-      atBats: 0,
-      hits: 0,
-      walks: 0,
-      hitByPitch: 0,
-      homeRuns: 0,
-    },
-    {
-      id: 9,
-      plateAppearance: 0,
-      atBats: 0,
-      hits: 0,
-      walks: 0,
-      hitByPitch: 0,
-      homeRuns: 0,
-    },
-  ];
   const [lineupStats, setLineupStats] = useState<BatterStats[]>(initialLineupStats);
   const [currentBatter, setCurrentBatter] = useState(0);
   const [showStats, setShowStats] = useState(false);
@@ -150,6 +54,21 @@ function App() {
       return;
     }
   });
+  const toggleModal = () => {
+    if(modalFirstTips){
+      setModalVisible(!modalVisible);
+      dealHand(shuffleDeck(getStarterDeck()));
+      setLineupStats(prev => updateLineupStat(prev, currentBatter, "plateAppearance", 1));
+      setModalFirstTips(false);
+      setModalCloseText("Close");
+    }else{
+      setModalVisible(!modalVisible);
+      if (hand.length === 0) {
+        dealHand(currentDeck);
+        nextBatter();
+      }
+    }
+  };
 
   //Pitcher relief calculations
   useEffect(() => {
@@ -158,20 +77,16 @@ function App() {
     }
   }, [pitcherStamina]);
 
-  const shuffleDeck = (deck: string[]) => {
-    for (let i = deck.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [deck[i], deck[j]] = [deck[j], deck[i]];
-    }
-    setCurrentDeck([...deck]);
-  };
-
-  const dealHand = () => {
-    setHand([...currentDeck.splice(0, 6)]);
-    if (currentDeck.length < 6) {
-      shuffleDeck(discard);
+  const dealHand = (deck: string[]) => {
+    let deckCopy = [...deck];
+    if (deckCopy.length < 6) {
+      const rebuiltDeck = shuffleDeck([...discard]);
+      deckCopy = [...rebuiltDeck];
       setDiscard([]);
     }
+    const newHand = deckCopy.splice(0, 6);
+    setCurrentDeck(deckCopy);
+    setHand(newHand);
   };
 
   const newPitcher = () => {
@@ -207,26 +122,10 @@ function App() {
     setCountStrikes(0);
   };
 
-  const updateLineupStat = (
-    id: number,
-    stat: keyof BatterStats,
-    value: number
-  ) => {
-    setLineupStats((prevStats) =>
-      prevStats.map((player, index) =>
-        index === id ? { ...player, [stat]: player[stat] + value } : player
-      )
-    );
-  };
-
-  const resetStats = () => {
-    setLineupStats(initialLineupStats);
-  };
-
   const nextBatter = () => {
     setCurrentBatter((previousBatter) => {
       const newBatter = (previousBatter + 1) % 9;
-      updateLineupStat(newBatter, "plateAppearance", 1);
+      setLineupStats(prev => updateLineupStat(prev, newBatter, "plateAppearance", 1));
       return newBatter;
     });
   };
@@ -243,13 +142,13 @@ function App() {
     setHand([]);
     shuffleDeck(getStarterDeck());
     setDiscard([]);
-    resetStats();
+    setLineupStats(resetStats());
     setModalOnClose(undefined);
     setModalOnSecondaryAction(undefined);
     setModalSecondaryActionText(undefined);
     setShowStats(false);
     setGameEnded(false);
-    dealHand();
+    dealHand(getStarterDeck());
   };
 
   const endGameStats = () => {
@@ -276,7 +175,7 @@ function App() {
       setModalText("");
       setModalMode("small");
       setModalVisible(true);
-      updateLineupStat(currentBatter, "walks", 1);
+      setLineupStats(prev => updateLineupStat(prev, currentBatter, "walks", 1));
       endTurn();
       if (bases.includes(false)) {
         if (bases[2]) {
@@ -307,7 +206,7 @@ function App() {
       setModalText("");
       setModalMode("small");
       setModalVisible(true);
-      updateLineupStat(currentBatter, "atBats", 1);
+      setLineupStats(prev => updateLineupStat(prev, currentBatter, "atBats", 1));
       endTurn();
       setCountOuts(countOuts + 1);
       endInning();
@@ -320,9 +219,9 @@ function App() {
     var random = Math.random();
     setModalText("");
     setModalMode("small");
-    updateLineupStat(currentBatter, "atBats", 1);
+      setLineupStats(prev => updateLineupStat(prev, currentBatter, "atBats", 1));
     if (random > odds) {
-      updateLineupStat(currentBatter, "hits", 1);
+      setLineupStats(prev => updateLineupStat(prev, currentBatter, "hits", 1));
       advanceRunners(true);
       setModalTitle("Base hit!");
       endTurn();
@@ -340,7 +239,7 @@ function App() {
     setModalText("");
     setModalMode("small");
     setModalVisible(true);
-    updateLineupStat(currentBatter, "hitByPitch", 1);
+    setLineupStats(prev => updateLineupStat(prev, currentBatter, "hitByPitch", 1));
     endTurn();
     if (bases.includes(false)) {
       if (bases[2]) {
@@ -376,9 +275,9 @@ function App() {
     setModalText("");
     setModalMode("small");
     setModalVisible(true);
-    updateLineupStat(currentBatter, "hits", 1);
-    updateLineupStat(currentBatter, "homeRuns", 1);
-    updateLineupStat(currentBatter, "atBats", 1);
+    setLineupStats(prev => updateLineupStat(prev, currentBatter, "hits", 1));
+    setLineupStats(prev => updateLineupStat(prev, currentBatter, "homeRuns", 1));
+    setLineupStats(prev => updateLineupStat(prev, currentBatter, "atBats", 1));
     setScore(score + countRunners(bases) + 1);
     clearBases();
     endTurn();
