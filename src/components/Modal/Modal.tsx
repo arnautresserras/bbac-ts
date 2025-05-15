@@ -6,7 +6,7 @@ interface ModalProps {
   content: string;
   mode: string;
   isOpen: boolean;
-  toggleModal: () => void;
+  hideModal: () => void;
   primaryActionText: string;
   onClose?: () => void;
   secondaryActionText?: string;
@@ -18,7 +18,7 @@ const Modal: React.FC<ModalProps> = ({
   content,
   mode,
   isOpen,
-  toggleModal,
+  hideModal,
   primaryActionText,
   onClose,
   secondaryActionText,
@@ -28,7 +28,7 @@ const Modal: React.FC<ModalProps> = ({
     if (onClose) {
       onClose();
     }
-    toggleModal();
+    hideModal();
   };
 
   return (

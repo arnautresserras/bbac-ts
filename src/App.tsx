@@ -10,18 +10,21 @@ import { welcomeText } from "./data/gameTips";
 import { getStarterDeck } from "./data/starterDeck";
 import { initialLineupStats, resetStats, updateLineupStat } from "./logic/statsManager";
 import { shuffleDeck } from "./utils/shuffleDeck";
+import { useModal } from "./hooks/useModal";
+import { ModalType } from "./types/modalType";
 
 function App() {
   //Modal State and key functions
-  const [modalTitle, setModalTitle] = useState("Welcome to Baseball at Cards");
-  const [modalText, setModalText] = useState(welcomeText);
-  const [modalMode, setModalMode] = useState("large");
-  const [modalVisible, setModalVisible] = useState(true);
-  const [modalCloseText, setModalCloseText] = useState("Start");
-  const [modalOnClose, setModalOnClose] = useState<(() => void) | undefined>(undefined);
-  const [modalSecondaryActionText, setModalSecondaryActionText] = useState<string | undefined>();
-  const [modalOnSecondaryAction, setModalOnSecondaryAction] = useState<(() => void) | undefined>(undefined);
   const [modalFirstTips, setModalFirstTips] = useState(true);
+  const {
+    modalProps,
+    showModal,
+    shouldHideHand,
+    setModalContent,
+    setPrimaryAction,
+    clearPrimaryAction,
+    setSecondaryAction
+} = useModal();
 
   //Game variables
   const [maxPitcherStamina, setMaxPitcherStamina] = useState(25);
@@ -50,25 +53,18 @@ function App() {
   useEffect(() => {
     if (firstUpdate.current) {
       firstUpdate.current = false;
+      setModalContent("Welcome to Baseball at Cards", welcomeText, ModalType.Info);
+      setPrimaryAction("Start", () => {
+        setCurrentDeck(shuffleDeck(getStarterDeck()));
+        dealHand();
+        setLineupStats(prev => updateLineupStat(prev, currentBatter, "plateAppearance", 1));
+        setModalFirstTips(false);
+        clearPrimaryAction();
+      });
       resetState();
       return;
     }
   });
-  const toggleModal = () => {
-    if(modalFirstTips){
-      setModalVisible(!modalVisible);
-      dealHand(shuffleDeck(getStarterDeck()));
-      setLineupStats(prev => updateLineupStat(prev, currentBatter, "plateAppearance", 1));
-      setModalFirstTips(false);
-      setModalCloseText("Close");
-    }else{
-      setModalVisible(!modalVisible);
-      if (hand.length === 0) {
-        dealHand(currentDeck);
-        nextBatter();
-      }
-    }
-  };
 
   //Pitcher relief calculations
   useEffect(() => {
@@ -77,25 +73,29 @@ function App() {
     }
   }, [pitcherStamina]);
 
-  const dealHand = (deck: string[]) => {
-    let deckCopy = [...deck];
-    if (deckCopy.length < 6) {
-      const rebuiltDeck = shuffleDeck([...discard]);
-      deckCopy = [...rebuiltDeck];
-      setDiscard([]);
-    }
-    const newHand = deckCopy.splice(0, 6);
-    setCurrentDeck(deckCopy);
-    setHand(newHand);
+  const dealHand = () => {
+    setCurrentDeck(prevDeck => {
+      let deckCopy = [...prevDeck];
+
+      if (deckCopy.length < 6) {
+        // Rebuild deck from discard
+        console.log("Empty");
+        deckCopy = shuffleDeck([...discard]);
+        setDiscard([]);
+      }
+
+      const newHand = deckCopy.splice(0, 6);
+      setHand(newHand);
+      return deckCopy;
+    });
   };
 
   const newPitcher = () => {
     setMaxPitcherStamina(15);
     setPitcherStamina(10);
-    setModalTitle("New pitcher!");
-    setModalText("");
-    setModalMode("small");
-    setModalVisible(true);
+    setModalContent("New pitcher!", "", ModalType.PitcherChange);
+    setPrimaryAction("Close");
+    showModal();
   };
 
   const modifyStamina = (ammount: number) => {
@@ -140,20 +140,18 @@ function App() {
     setCountOuts(0);
     setCurrentBatter(0);
     setHand([]);
-    shuffleDeck(getStarterDeck());
     setDiscard([]);
     setLineupStats(resetStats());
-    setModalOnClose(undefined);
-    setModalOnSecondaryAction(undefined);
-    setModalSecondaryActionText(undefined);
     setShowStats(false);
     setGameEnded(false);
-    dealHand(getStarterDeck());
+    const newDeck = shuffleDeck(getStarterDeck());
+    setCurrentDeck(newDeck);
+    dealHand();
   };
 
   const endGameStats = () => {
     setShowStats(true);
-    setModalVisible(false);
+    showModal();
   }
 
   const advanceRunners = (newRunner: boolean) => {
@@ -171,10 +169,8 @@ function App() {
       setCountBalls(countBalls + 1);
       modifyStamina(-1);
     } else {
-      setModalTitle("Walk!");
-      setModalText("");
-      setModalMode("small");
-      setModalVisible(true);
+      setModalContent("Walk!", "", ModalType.TurnEnd);
+      showModal();
       setLineupStats(prev => updateLineupStat(prev, currentBatter, "walks", 1));
       endTurn();
       if (bases.includes(false)) {
@@ -202,10 +198,8 @@ function App() {
       setCountStrikes(countStrikes + 1);
       modifyStamina(-1);
     } else {
-      setModalTitle("Strikeout!");
-      setModalText("");
-      setModalMode("small");
-      setModalVisible(true);
+      setModalContent("Strikeout!", "", ModalType.TurnEnd);
+      showModal();
       setLineupStats(prev => updateLineupStat(prev, currentBatter, "atBats", 1));
       endTurn();
       setCountOuts(countOuts + 1);
@@ -217,28 +211,25 @@ function App() {
   const swing = () => {
     var odds = Math.max(pitcherStamina / maxPitcherStamina, 0.33);
     var random = Math.random();
-    setModalText("");
-    setModalMode("small");
       setLineupStats(prev => updateLineupStat(prev, currentBatter, "atBats", 1));
     if (random > odds) {
       setLineupStats(prev => updateLineupStat(prev, currentBatter, "hits", 1));
       advanceRunners(true);
-      setModalTitle("Base hit!");
+      setModalContent("Base hit!", "", ModalType.TurnEnd);
       endTurn();
     } else {
-      setModalTitle("Ground out!");
+      setModalContent("Ground out!", "", ModalType.TurnEnd);
       endTurn();
       setCountOuts(countOuts + 1);
       endInning();
     }
-    setModalVisible(true);
+    
+    showModal();
   };
 
   const hitByPitch = () => {
-    setModalTitle("Hit by pitch!");
-    setModalText("");
-    setModalMode("small");
-    setModalVisible(true);
+    setModalContent("Hit by pitch!", "", ModalType.TurnEnd);
+    showModal();
     setLineupStats(prev => updateLineupStat(prev, currentBatter, "hitByPitch", 1));
     endTurn();
     if (bases.includes(false)) {
@@ -271,10 +262,8 @@ function App() {
   };
 
   const homeRun = () => {
-    setModalTitle("HOME RUN!");
-    setModalText("");
-    setModalMode("small");
-    setModalVisible(true);
+    setModalContent("HOME RUN!", "", ModalType.TurnEnd);
+    showModal();
     setLineupStats(prev => updateLineupStat(prev, currentBatter, "hits", 1));
     setLineupStats(prev => updateLineupStat(prev, currentBatter, "homeRuns", 1));
     setLineupStats(prev => updateLineupStat(prev, currentBatter, "atBats", 1));
@@ -286,10 +275,12 @@ function App() {
 
   const endTurn = () => {
     let usableHand = hand.filter((item) => item.trim() !== "");
-    discard.push.apply(discard, usableHand);
+    setDiscard((prev) => [...prev, ...usableHand]);
     modifyStamina(usableHand.length - 1);
     resetCount();
     setHand([]);
+    dealHand();
+    nextBatter();
   };
 
   const endInning = () => {
@@ -307,13 +298,10 @@ function App() {
 
   const endGame = () => {
     setGameEnded(true);
-    setModalTitle("Game over!");
-    setModalText("You scored " + score + (score === 1 ? " run" : " runs."));
-    setModalSecondaryActionText("Show Stats");
-    setModalOnSecondaryAction(() => endGameStats);
-    setModalMode("small");
-    setModalVisible(true);
-    setModalOnClose(() => resetState);
+    setModalContent("Game over!", "You scored " + score + (score === 1 ? " run" : " runs."), ModalType.TurnEnd);
+    setSecondaryAction("Show Stats", () => endGameStats);
+    setPrimaryAction("New game", resetState);
+    showModal();
   };
 
   const playCard = (card: string, index: number) => {
@@ -347,17 +335,7 @@ function App() {
 
   return (
     <div className="App">
-      <Modal
-        title={modalTitle}
-        content={modalText}
-        mode={modalMode}
-        isOpen={modalVisible}
-        toggleModal={toggleModal}
-        primaryActionText={modalCloseText}
-        onClose={modalOnClose}
-        secondaryActionText={modalSecondaryActionText}
-        onSecondaryAction={modalOnSecondaryAction}
-      />
+      <Modal {...modalProps} />
       <div className="BbaC-body">
         <ScoreBoard
           score={score}
@@ -371,7 +349,9 @@ function App() {
         ></ScoreBoard>
         {!showStats ? (
           <>
-            <DisplayHand playCard={playCard} hand={hand}></DisplayHand>
+            <div className={shouldHideHand(modalProps.mode) && modalProps.isOpen ? "hidden-hand" : ""}>
+              <DisplayHand playCard={playCard} hand={hand}></DisplayHand>
+            </div>
             <DeckInfo
               currentDeck={currentDeck.length}
               discard={discard.length}
