@@ -73,19 +73,22 @@ function App() {
     }
   }, [pitcherStamina]);
 
+  const refillDeck = (fullDiscard: string[]) => {
+    setCurrentDeck(prevDeck => {
+      if (prevDeck.length >= 6) return prevDeck;
+      const newDeck = shuffleDeck([...prevDeck, ...fullDiscard]);
+      setDiscard([]);
+      return newDeck;
+    });
+  };
+
   const dealHand = () => {
     setCurrentDeck(prevDeck => {
       let deckCopy = [...prevDeck];
 
-      if (deckCopy.length < 6) {
-        // Rebuild deck from discard
-        console.log("Empty");
-        deckCopy = shuffleDeck([...discard]);
-        setDiscard([]);
-      }
-
       const newHand = deckCopy.splice(0, 6);
       setHand(newHand);
+      
       return deckCopy;
     });
   };
@@ -275,10 +278,12 @@ function App() {
 
   const endTurn = () => {
     let usableHand = hand.filter((item) => item.trim() !== "");
+    const discardCopy = [...discard];
     setDiscard((prev) => [...prev, ...usableHand]);
     modifyStamina(usableHand.length - 1);
     resetCount();
     setHand([]);
+    refillDeck([...discardCopy, ...usableHand]);
     dealHand();
     nextBatter();
   };
