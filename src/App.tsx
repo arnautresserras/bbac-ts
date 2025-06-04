@@ -23,7 +23,8 @@ function App() {
     setModalContent,
     setPrimaryAction,
     clearPrimaryAction,
-    setSecondaryAction
+    setSecondaryAction,
+    clearSecondaryAction
 } = useModal();
 
   //Game variables
@@ -147,12 +148,15 @@ function App() {
     setLineupStats(resetStats());
     setShowStats(false);
     setGameEnded(false);
+    clearSecondaryAction();
+    setPrimaryAction("Close");
     const newDeck = shuffleDeck(getStarterDeck());
     setCurrentDeck(newDeck);
     dealHand();
   };
 
   const endGameStats = () => {
+    console.log("endGameStats");
     setShowStats(true);
     showModal();
   }
@@ -304,9 +308,8 @@ function App() {
   const endGame = () => {
     setGameEnded(true);
     setModalContent("Game over!", "You scored " + score + (score === 1 ? " run" : " runs."), ModalType.TurnEnd);
-    setSecondaryAction("Show Stats", () => endGameStats);
+    setSecondaryAction("Show Stats", endGameStats);
     setPrimaryAction("New game", resetState);
-    showModal();
   };
 
   const playCard = (card: string, index: number) => {
