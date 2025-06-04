@@ -31,6 +31,13 @@ const Modal: React.FC<ModalProps> = ({
     hideModal();
   };
 
+  const handleSecondaryAction = () => {
+    if(onSecondaryAction) {
+      onSecondaryAction();
+    }
+    hideModal();
+  }
+
   return (
     <div>
       {isOpen && (
@@ -40,7 +47,9 @@ const Modal: React.FC<ModalProps> = ({
           <div className="modal-buttons">
             <button onClick={handleClose}>{primaryActionText}</button>
             {secondaryActionText && (
-              <button onClick={onSecondaryAction}>{secondaryActionText}</button>
+              <button onClick={handleSecondaryAction}>
+                {secondaryActionText}
+              </button>
             )}
           </div>
         </div>

@@ -156,6 +156,7 @@ function App() {
   };
 
   const endGameStats = () => {
+    console.log("endGameStats");
     setShowStats(true);
     showModal();
   }
@@ -307,9 +308,8 @@ function App() {
   const endGame = () => {
     setGameEnded(true);
     setModalContent("Game over!", "You scored " + score + (score === 1 ? " run" : " runs."), ModalType.TurnEnd);
-    setSecondaryAction("Show Stats", () => endGameStats);
+    setSecondaryAction("Show Stats", endGameStats);
     setPrimaryAction("New game", resetState);
-    showModal();
   };
 
   const playCard = (card: string, index: number) => {
