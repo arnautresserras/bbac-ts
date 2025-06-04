@@ -23,7 +23,8 @@ function App() {
     setModalContent,
     setPrimaryAction,
     clearPrimaryAction,
-    setSecondaryAction
+    setSecondaryAction,
+    clearSecondaryAction
 } = useModal();
 
   //Game variables
@@ -147,6 +148,8 @@ function App() {
     setLineupStats(resetStats());
     setShowStats(false);
     setGameEnded(false);
+    clearSecondaryAction();
+    setPrimaryAction("Close");
     const newDeck = shuffleDeck(getStarterDeck());
     setCurrentDeck(newDeck);
     dealHand();

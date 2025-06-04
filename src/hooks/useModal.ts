@@ -31,10 +31,12 @@ export function useModal() {
 
   const clearPrimaryAction = () => setPrimaryAction("Close");
 
-  const setSecondaryAction = (text: string, callback?: () => void) => {
+  const setSecondaryAction = (text?: string, callback?: () => void) => {
     setSecondaryText(text);
     setOnSecondary(() => callback);
   };
+
+  const clearSecondaryAction = () => setSecondaryAction(undefined);
 
   return {
     modalProps: {
@@ -55,5 +57,6 @@ export function useModal() {
     setPrimaryAction,
     clearPrimaryAction,
     setSecondaryAction,
+    clearSecondaryAction
   };
 }
