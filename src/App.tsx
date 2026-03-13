@@ -11,6 +11,7 @@ import { getStarterDeck } from "./data/starterDeck";
 import { initialLineupStats, resetStats, updateLineupStat } from "./logic/statsManager";
 import { shuffleDeck } from "./utils/shuffleDeck";
 import { useModal } from "./hooks/useModal";
+import { useCard } from "./hooks/useCard";
 import { ModalType } from "./types/modalType";
 
 function App() {
@@ -25,13 +26,24 @@ function App() {
     clearPrimaryAction,
     setSecondaryAction,
     clearSecondaryAction
-} = useModal();
+  } = useModal();
+
+  //Numeric constants
+  const HAND_SIZE = 6;
+  const MAX_OUTS_PER_INNING = 3; 
+  const MAX_BALLS_BEFORE_WALK = 3;
+  const MAX_INNINGS = 3;
+  const LINEUP_SIZE = 9; 
+  const INITIAL_PITCHER_STAMINA = 20; 
+  const MAX_PITCHER_STAMINA = 25;
+  const FIRST_BASE = 0;
+  const SECOND_BASE = 1;
+  const THIRD_BASE = 2;
 
   //Game variables
-  const [maxPitcherStamina, setMaxPitcherStamina] = useState(25);
-  //const [swingPower, setSwingPower] = useState(4);
+  const [maxPitcherStamina, setMaxPitcherStamina] = useState(MAX_PITCHER_STAMINA);
   const [score, setScore] = useState(0);
-  const [pitcherStamina, setPitcherStamina] = useState(20);
+  const [pitcherStamina, setPitcherStamina] = useState(INITIAL_PITCHER_STAMINA);
   const [countBalls, setCountBalls] = useState(0);
   const [countStrikes, setCountStrikes] = useState(0);
   const [countOuts, setCountOuts] = useState(0);
@@ -43,6 +55,11 @@ function App() {
   const [hand, setHand] = useState<string[]>([]);
   const [currentDeck, setCurrentDeck] = useState<string[]>([]);
   const [discard, setDiscard] = useState<string[]>([]);
+  const handRef = useRef<string[]>([]);
+  const setHandWithRef = (nextHand: string[]) => {
+    handRef.current = nextHand;
+    setHand(nextHand);
+  };
 
   //Stats variables
   const [lineupStats, setLineupStats] = useState<BatterStats[]>(initialLineupStats);
@@ -76,7 +93,7 @@ function App() {
 
   const refillDeck = (fullDiscard: string[]) => {
     setCurrentDeck(prevDeck => {
-      if (prevDeck.length >= 6) return prevDeck;
+      if (prevDeck.length >= HAND_SIZE) return prevDeck;
       const newDeck = shuffleDeck([...prevDeck, ...fullDiscard]);
       setDiscard([]);
       return newDeck;
@@ -85,10 +102,10 @@ function App() {
 
   const dealHand = () => {
     setCurrentDeck(prevDeck => {
-      let deckCopy = [...prevDeck];
+      const deckCopy = [...prevDeck];
 
-      const newHand = deckCopy.splice(0, 6);
-      setHand(newHand);
+      const newHand = deckCopy.splice(0, HAND_SIZE);
+      setHandWithRef(newHand);
       
       return deckCopy;
     });
@@ -102,15 +119,15 @@ function App() {
     showModal();
   };
 
-  const modifyStamina = (ammount: number) => {
-    if (ammount > 0) {
-      pitcherStamina + ammount > maxPitcherStamina
+  const modifyStamina = (amount: number) => {
+    if (amount > 0) {
+      pitcherStamina + amount > maxPitcherStamina
         ? setPitcherStamina(maxPitcherStamina)
-        : setPitcherStamina(pitcherStamina + ammount);
+        : setPitcherStamina(pitcherStamina + amount);
     } else {
-      pitcherStamina + ammount < 0
+      pitcherStamina + amount < 0
         ? setPitcherStamina(0)
-        : setPitcherStamina(pitcherStamina + ammount);
+        : setPitcherStamina(pitcherStamina + amount);
     }
   };
 
@@ -128,7 +145,7 @@ function App() {
 
   const nextBatter = () => {
     setCurrentBatter((previousBatter) => {
-      const newBatter = (previousBatter + 1) % 9;
+      const newBatter = (previousBatter + 1) % LINEUP_SIZE;
       setLineupStats(prev => updateLineupStat(prev, newBatter, "plateAppearance", 1));
       return newBatter;
     });
@@ -143,7 +160,7 @@ function App() {
     clearBases();
     setCountOuts(0);
     setCurrentBatter(0);
-    setHand([]);
+    setHandWithRef([]);
     setDiscard([]);
     setLineupStats(resetStats());
     setShowStats(false);
@@ -156,7 +173,6 @@ function App() {
   };
 
   const endGameStats = () => {
-    console.log("endGameStats");
     setShowStats(true);
     showModal();
   }
@@ -165,14 +181,36 @@ function App() {
     if (bases[0]) {
       setScore(score + 1);
     }
-    let newBases = bases;
+    const newBases = [...bases];
     newBases.shift();
     newBases.push(newRunner);
     setBases(newBases);
   };
 
+  const placeRunnerOnBase = () => { 
+    //Bases are full
+    if (!bases.includes(false)) { 
+      advanceRunners(true); 
+      return; 
+    }
+
+    if (bases[THIRD_BASE]) {
+      if (bases[FIRST_BASE]) {
+        const newBases = [...bases];
+        newBases[SECOND_BASE] = true;
+        setBases(newBases);
+      } else {
+        advanceRunners(true);
+      }
+    } else {
+      const newBases = [...bases];
+      newBases[THIRD_BASE] = true;
+      setBases(newBases);
+    }
+  }
+
   const ball = () => {
-    if (countBalls < 3) {
+    if (countBalls < MAX_BALLS_BEFORE_WALK) {
       setCountBalls(countBalls + 1);
       modifyStamina(-1);
     } else {
@@ -180,23 +218,7 @@ function App() {
       showModal();
       setLineupStats(prev => updateLineupStat(prev, currentBatter, "walks", 1));
       endTurn();
-      if (bases.includes(false)) {
-        if (bases[2]) {
-          if (bases[0]) {
-            let newBases = bases;
-            newBases[1] = true;
-            setBases(newBases);
-          } else {
-            advanceRunners(true);
-          }
-        } else {
-          let newBases = bases;
-          newBases[2] = true;
-          setBases(newBases);
-        }
-      } else {
-        advanceRunners(true);
-      }
+      placeRunnerOnBase();
     }
   };
 
@@ -216,8 +238,8 @@ function App() {
   };
 
   const swing = () => {
-    var odds = Math.max(pitcherStamina / maxPitcherStamina, 0.33);
-    var random = Math.random();
+    let odds = Math.max(pitcherStamina / maxPitcherStamina, 0.33);
+    let random = Math.random();
       setLineupStats(prev => updateLineupStat(prev, currentBatter, "atBats", 1));
     if (random > odds) {
       setLineupStats(prev => updateLineupStat(prev, currentBatter, "hits", 1));
@@ -239,28 +261,12 @@ function App() {
     showModal();
     setLineupStats(prev => updateLineupStat(prev, currentBatter, "hitByPitch", 1));
     endTurn();
-    if (bases.includes(false)) {
-      if (bases[2]) {
-        if (bases[0]) {
-          let newBases = bases;
-          newBases[1] = true;
-          setBases(newBases);
-        } else {
-          advanceRunners(true);
-        }
-      } else {
-        let newBases = bases;
-        newBases[2] = true;
-        setBases(newBases);
-      }
-    } else {
-      advanceRunners(true);
-    }
+    placeRunnerOnBase();
   };
 
   const wildPitch = () => {
     modifyStamina(-1);
-    if (countBalls < 3) {
+    if (countBalls < MAX_BALLS_BEFORE_WALK) {
       ball();
       advanceRunners(false);
     } else {
@@ -271,9 +277,11 @@ function App() {
   const homeRun = () => {
     setModalContent("HOME RUN!", "", ModalType.TurnEnd);
     showModal();
-    setLineupStats(prev => updateLineupStat(prev, currentBatter, "hits", 1));
-    setLineupStats(prev => updateLineupStat(prev, currentBatter, "homeRuns", 1));
-    setLineupStats(prev => updateLineupStat(prev, currentBatter, "atBats", 1));
+    setLineupStats(prev => { 
+      let updated = updateLineupStat(prev, currentBatter, "hits", 1);
+      updated = updateLineupStat(updated, currentBatter, "homeRuns", 1);
+      updated = updateLineupStat(updated, currentBatter, "atBats", 1);
+    return updated; });
     setScore(score + countRunners(bases) + 1);
     clearBases();
     endTurn();
@@ -281,20 +289,21 @@ function App() {
   };
 
   const endTurn = () => {
-    let usableHand = hand.filter((item) => item.trim() !== "");
-    const discardCopy = [...discard];
-    setDiscard((prev) => [...prev, ...usableHand]);
+    const usableHand = handRef.current.filter((item) => item.trim() !== "");
+    if (usableHand.length > 0) {
+      setDiscard((prev) => [...prev, ...usableHand]);
+    }
     modifyStamina(usableHand.length - 1);
     resetCount();
-    setHand([]);
-    refillDeck([...discardCopy, ...usableHand]);
+    setHandWithRef([]);
+    //refillDeck([...discardCopy, ...usableHand]);
     dealHand();
     nextBatter();
   };
 
   const endInning = () => {
-    if (countOuts !== 0 && (countOuts + 1) % 3 === 0) {
-      if (inning === 3) {
+    if (countOuts !== 0 && (countOuts + 1) % MAX_OUTS_PER_INNING === 0) {
+      if (inning === MAX_INNINGS) {
         endGame();
         return;
       }
@@ -312,34 +321,17 @@ function App() {
     setPrimaryAction("New game", resetState);
   };
 
-  const playCard = (card: string, index: number) => {
-    let newHand = hand;
-    let discardedCard = newHand.splice(index, 1, "");
-    discard.push(...discardedCard);
-    setHand(newHand);
-    switch (card) {
-      case "Ball":
-        ball();
-        break;
-      case "Strike":
-        strike();
-        break;
-      case "Swing":
-        swing();
-        break;
-      case "Hit by pitch":
-        hitByPitch();
-        break;
-      case "Wild pitch":
-        wildPitch();
-        break;
-      case "Home run":
-        homeRun();
-        break;
-      default:
-        break;
-    }
-  };
+  const { playCard } = useCard({
+    ball,
+    strike,
+    swing,
+    hitByPitch,
+    wildPitch,
+    homeRun,
+    hand,
+    setHand: setHandWithRef,
+    discardCard: (card: string) => setDiscard((prev) => [...prev, card])
+  });
 
   return (
     <div className="App">
