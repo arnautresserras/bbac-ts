@@ -54,11 +54,22 @@ function App() {
   //Card variables
   const [hand, setHand] = useState<string[]>([]);
   const [currentDeck, setCurrentDeck] = useState<string[]>([]);
-  const [discard, setDiscard] = useState<string[]>([]);
+  const [discard, _setDiscard] = useState<string[]>([]);
   const handRef = useRef<string[]>([]);
+  const discardRef = useRef<string[]>([]);
   const setHandWithRef = (nextHand: string[]) => {
     handRef.current = nextHand;
     setHand(nextHand);
+  };
+  const setDiscard = (next: string[] | ((prev: string[]) => string[])) => {
+    if (typeof next === 'function') {
+      const newVal = next(discardRef.current);
+      discardRef.current = newVal;
+      _setDiscard(newVal);
+    } else {
+      discardRef.current = next;
+      _setDiscard(next);
+    }
   };
 
   //Stats variables
@@ -91,22 +102,18 @@ function App() {
     }
   }, [pitcherStamina]);
 
-  const refillDeck = (fullDiscard: string[]) => {
+  const dealHand = (discardToRefill?: string[]) => {
     setCurrentDeck(prevDeck => {
-      if (prevDeck.length >= HAND_SIZE) return prevDeck;
-      const newDeck = shuffleDeck([...prevDeck, ...fullDiscard]);
-      setDiscard([]);
-      return newDeck;
-    });
-  };
+      let deckCopy = [...prevDeck];
 
-  const dealHand = () => {
-    setCurrentDeck(prevDeck => {
-      const deckCopy = [...prevDeck];
+      if (deckCopy.length < HAND_SIZE && discardToRefill && discardToRefill.length > 0) {
+        deckCopy = shuffleDeck([...deckCopy, ...discardToRefill]);
+        setDiscard([]);
+      }
 
       const newHand = deckCopy.splice(0, HAND_SIZE);
       setHandWithRef(newHand);
-      
+
       return deckCopy;
     });
   };
@@ -120,15 +127,7 @@ function App() {
   };
 
   const modifyStamina = (amount: number) => {
-    if (amount > 0) {
-      pitcherStamina + amount > maxPitcherStamina
-        ? setPitcherStamina(maxPitcherStamina)
-        : setPitcherStamina(pitcherStamina + amount);
-    } else {
-      pitcherStamina + amount < 0
-        ? setPitcherStamina(0)
-        : setPitcherStamina(pitcherStamina + amount);
-    }
+    setPitcherStamina(prev => Math.min(Math.max(prev + amount, 0), maxPitcherStamina));
   };
 
   const clearBases = () => {
@@ -271,6 +270,7 @@ function App() {
       advanceRunners(false);
     } else {
       ball();
+      advanceRunners(false);
     }
   };
 
@@ -290,14 +290,14 @@ function App() {
 
   const endTurn = () => {
     const usableHand = handRef.current.filter((item) => item.trim() !== "");
+    const fullDiscard = [...discardRef.current, ...usableHand];
     if (usableHand.length > 0) {
-      setDiscard((prev) => [...prev, ...usableHand]);
+      setDiscard(fullDiscard);
     }
     modifyStamina(usableHand.length - 1);
     resetCount();
     setHandWithRef([]);
-    //refillDeck([...discardCopy, ...usableHand]);
-    dealHand();
+    dealHand(fullDiscard);
     nextBatter();
   };
 
