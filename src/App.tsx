@@ -186,6 +186,21 @@ function App() {
     setBases(newBases);
   };
 
+  // Advance all existing runners by one and place the batter on base in a single update.
+  // Used for wild pitch + walk so both effects don't overwrite each other via stale closures.
+  const advanceAndPlace = () => {
+    if (bases[FIRST_BASE]) {
+      setScore(s => s + 1);
+    }
+    setBases(prevBases => {
+      const advanced = [...prevBases];
+      advanced.shift();
+      advanced.push(false);
+      advanced[THIRD_BASE] = true;
+      return advanced;
+    });
+  };
+
   const placeRunnerOnBase = () => { 
     //Bases are full
     if (!bases.includes(false)) { 
@@ -269,8 +284,11 @@ function App() {
       ball();
       advanceRunners(false);
     } else {
-      ball();
-      advanceRunners(false);
+      setModalContent("Walk!", "", ModalType.TurnEnd);
+      showModal();
+      setLineupStats(prev => updateLineupStat(prev, currentBatter, "walks", 1));
+      endTurn();
+      advanceAndPlace();
     }
   };
 
@@ -302,7 +320,7 @@ function App() {
   };
 
   const endInning = () => {
-    if (countOuts !== 0 && (countOuts + 1) % MAX_OUTS_PER_INNING === 0) {
+    if ((countOuts + 1) % MAX_OUTS_PER_INNING === 0) {
       if (inning === MAX_INNINGS) {
         endGame();
         return;
@@ -316,7 +334,7 @@ function App() {
 
   const endGame = () => {
     setGameEnded(true);
-    setModalContent("Game over!", "You scored " + score + (score === 1 ? " run" : " runs."), ModalType.TurnEnd);
+    setModalContent("Game over!", "You scored " + score + (score === 1 ? " run" : " runs."), ModalType.GameEnd);
     setSecondaryAction("Show Stats", endGameStats);
     setPrimaryAction("New game", resetState);
   };
