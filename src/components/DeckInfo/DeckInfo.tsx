@@ -6,7 +6,7 @@ interface Props{
     hand: number;
 }
 
-const BasesBug = (props:Props) => {
+const DeckInfo = (props:Props) => {
     return (
         <div className="deckInfo">
             <div className="deckInfo-detail">
@@ -22,5 +22,5 @@ const BasesBug = (props:Props) => {
     )
 }
 
-export default BasesBug;
+export default DeckInfo;
 

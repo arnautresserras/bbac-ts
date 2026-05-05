@@ -1,6 +1,5 @@
 import { IoMdArrowDropup } from "react-icons/io";
 import BasesBug from "../BasesBug/BasesBug";
-import ProgressBar from "./StaminaBar";
 import StaminaBar from "./StaminaBar";
 
 interface Props{

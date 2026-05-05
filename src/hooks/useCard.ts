@@ -1,5 +1,4 @@
 import { useCallback } from "react";
-import { cardActions } from "../logic/cardActions";
 
 interface UseCardProps {
   ball: () => void;
