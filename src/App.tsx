@@ -19,14 +19,13 @@ import { useGameCounts } from "./hooks/useGameCounts";
 import { usePitcher } from "./hooks/usePitcher";
 import { useBaseRunners } from "./hooks/useBaseRunners";
 import { useDeck } from "./hooks/useDeck";
+import { useRun } from "./hooks/useRun";
+import { BOSS_1 } from "./data/bosses";
 
 const HAND_SIZE = 6;
 const MAX_OUTS_PER_INNING = 3;
 const MAX_BALLS_BEFORE_WALK = 3;
-const MAX_INNINGS = 3;
 const LINEUP_SIZE = 9;
-const INITIAL_PITCHER_STAMINA = 20;
-const MAX_PITCHER_STAMINA = 25;
 
 function App() {
   const {
@@ -35,15 +34,16 @@ function App() {
     setSecondaryAction, clearSecondaryAction,
   } = useModal();
 
+  const run = useRun();
   const counts = useGameCounts(MAX_OUTS_PER_INNING);
-  const pitcher = usePitcher(INITIAL_PITCHER_STAMINA, MAX_PITCHER_STAMINA);
+  const pitcher = usePitcher(BOSS_1.initialStamina, BOSS_1.maxStamina);
   const baseRunners = useBaseRunners();
   const deck = useDeck(HAND_SIZE);
 
   const [lineupStats, setLineupStats] = useState<BatterStats[]>(initialLineupStats);
   const [currentBatter, setCurrentBatter] = useState(0);
   const [showStats, setShowStats] = useState(false);
-  const [gameEnded, setGameEnded] = useState(false);
+  const [runResult, setRunResult] = useState<"playing" | "boss-win" | "boss-loss">("playing");
   const [modalFirstTips, setModalFirstTips] = useState(true);
 
   const firstUpdate = useRef(true);
@@ -92,12 +92,12 @@ function App() {
   };
 
   const handleEndInning = () => {
-    const result = counts.endInning(MAX_INNINGS);
+    const result = counts.endInning(run.getCurrentBoss().maxInnings);
     if (result === "new-inning") {
       baseRunners.clearBases();
       pitcher.modifyStamina(5);
     } else if (result === "game-over") {
-      endGame();
+      endBossLoss();
     }
   };
 
@@ -106,25 +106,45 @@ function App() {
     showModal();
   };
 
-  const endGame = () => {
-    setGameEnded(true);
+  const endBossLoss = () => {
+    setRunResult("boss-loss");
     const runs = baseRunners.score;
-    setModalContent("Game over!", `You scored ${runs} ${runs === 1 ? "run" : "runs"}.`, ModalType.GameEnd);
+    const target = run.getCurrentBoss().targetRuns;
+    setModalContent("Game over!", `You scored ${runs} ${runs === 1 ? "run" : "runs"}. Target was ${target}.`, ModalType.GameEnd);
     setSecondaryAction("Show Stats", endGameStats);
     setPrimaryAction("New game", resetState);
   };
 
+  const checkBossWinRef = useRef(() => {});
+  checkBossWinRef.current = () => {
+    if (runResult !== "playing") return;
+    if (baseRunners.score >= run.getCurrentBoss().targetRuns) {
+      setRunResult("boss-win");
+      const boss = run.getCurrentBoss();
+      const runs = baseRunners.score;
+      setModalContent(`${boss.name} defeated!`, `You scored ${runs} ${runs === 1 ? "run" : "runs"} in ${boss.maxInnings} innings!`, ModalType.GameEnd);
+      setSecondaryAction("Show Stats", endGameStats);
+      setPrimaryAction("New game", resetState);
+      showModal();
+    }
+  };
+
+  useEffect(() => {
+    checkBossWinRef.current();
+  }, [baseRunners.score]);
+
   const resetState = () => {
+    run.initRun();
     baseRunners.reset();
     counts.reset();
-    pitcher.reset(INITIAL_PITCHER_STAMINA, MAX_PITCHER_STAMINA);
+    pitcher.reset(BOSS_1.initialStamina, BOSS_1.maxStamina);
     const newDeck = shuffleDeck(buildDeckFromRoster(Array(9).fill(AVERAGE_JOE)));
     deck.reset(newDeck);
     deck.dealHand();
     setCurrentBatter(0);
     setLineupStats(resetStats());
     setShowStats(false);
-    setGameEnded(false);
+    setRunResult("playing");
     clearSecondaryAction();
     setPrimaryAction("Close");
   };
@@ -284,9 +304,9 @@ function App() {
         )}
         <button
           className="statsButton"
-          onClick={() => { gameEnded ? resetState() : setShowStats(!showStats); }}
+          onClick={() => { runResult !== "playing" ? resetState() : setShowStats(!showStats); }}
         >
-          {gameEnded ? "Play again" : (showStats ? "Hide" : "Show") + " Stats"}
+          {runResult !== "playing" ? "Play again" : (showStats ? "Hide" : "Show") + " Stats"}
         </button>
       </div>
     </div>
