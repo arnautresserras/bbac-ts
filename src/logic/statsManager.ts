@@ -17,7 +17,7 @@ export const resetStats = (): BatterStats[] => {
 export const updateLineupStat = (
   stats: BatterStats[],
   id: number,
-  stat: keyof BatterStats,
+  stat: Exclude<keyof BatterStats, 'id'>,
   value: number
 ): BatterStats[] => {
   return stats.map((player, index) =>

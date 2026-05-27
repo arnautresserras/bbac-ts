@@ -1,4 +1,6 @@
-const starterDeck: string[] = [
+import { CardName } from "../types/cardName";
+
+const starterDeck: CardName[] = [
   "Ball", "Ball", "Ball", "Ball", "Ball", "Ball",
   "Ball", "Ball", "Ball", "Ball", "Ball", "Ball",
   "Ball", "Ball", "Ball", "Ball", "Ball", "Ball",
@@ -14,4 +16,4 @@ const starterDeck: string[] = [
   "Home run", "Home run"
 ];
 
-export const getStarterDeck = (): string[] => [...starterDeck];
+export const getStarterDeck = (): CardName[] => [...starterDeck];

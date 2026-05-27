@@ -1,4 +1,5 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
+import { CardName } from "../types/cardName";
 
 interface UseCardProps {
   ball: () => void;
@@ -9,7 +10,7 @@ interface UseCardProps {
   homeRun: () => void;
   hand: string[];
   setHand: (hand: string[]) => void;
-  discardCard: (card: string) => void;
+  discardCard: (card: CardName) => void;
 }
 
 export function useCard({
@@ -23,16 +24,16 @@ export function useCard({
   setHand,
   discardCard
 }: UseCardProps) {
-  const cardTypes: Record<string, () => void> = {
+  const cardTypes = useMemo<Record<CardName, () => void>>(() => ({
     "Ball": ball,
     "Strike": strike,
     "Swing": swing,
     "Hit by pitch": hitByPitch,
     "Wild pitch": wildPitch,
     "Home run": homeRun,
-  };
+  }), [ball, strike, swing, hitByPitch, wildPitch, homeRun]);
 
-  const playCard = useCallback((card: string, index: number) => {
+  const playCard = useCallback((card: CardName, index: number) => {
     const newHand = [...hand];
     newHand[index] = "";
     setHand(newHand);

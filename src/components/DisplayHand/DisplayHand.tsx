@@ -4,9 +4,9 @@ import { HomeRunIcon } from "./icons/HomeRunIcon";
 import { StrikeIcon } from "./icons/StrikeIcon";
 import { SwingIcon } from "./icons/SwingIcon";
 import { WildPitchIcon } from "./icons/WildPitchIcon";
+import { CardName } from "../../types/cardName";
 
-// Mapping card names to components
-const iconMap: Record<string, React.FC<{ size?: number; color?: string }>> = {
+const iconMap: Record<CardName, React.FC<{ size?: number; color?: string }>> = {
     "Ball": BallIcon,
     "Strike": StrikeIcon,
     "Swing": SwingIcon,
@@ -17,16 +17,16 @@ const iconMap: Record<string, React.FC<{ size?: number; color?: string }>> = {
 
 interface Props{
     hand: string[];
-    playCard: (card: string, index: number) => void;
+    playCard: (card: CardName, index: number) => void;
 }
 
 const DisplayHand = (props:Props) => {
     return (
         <div className="hand">
             {props.hand.map((card, index) => {
-                const IconComponent = iconMap[card]; // Get component dynamically
+                const IconComponent = iconMap[card as CardName];
                 return card.trim() !== "" ? (
-                <button className="hand-card" key={index} onClick={() => props.playCard(card, index)}>
+                <button className="hand-card" key={index} onClick={() => props.playCard(card as CardName, index)}>
                     {IconComponent && (
                     <div className="hand-card-icon">
                         <IconComponent size={48} color="black" />

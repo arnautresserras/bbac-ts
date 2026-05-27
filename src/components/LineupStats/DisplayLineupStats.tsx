@@ -1,20 +1,34 @@
+import { useMemo } from "react";
 import { BatterStats } from "../../interfaces/BatterStats";
 import './DisplayLineupStats.css';
 
-interface Props{
+interface Props {
     lineupStats: BatterStats[];
     currentBatter: number;
 }
 
-// Custom formatting function to remove leading zero
 const formatStat = (num: number): string => {
-    const formatted = num.toFixed(3); // Set the desired decimal places (e.g., 3)
-    return formatted.replace(/^0\./, '.'); // Remove leading zero if present
+    const formatted = num.toFixed(3);
+    return formatted.replace(/^0\./, '.');
 };
 
-const DisplayLineupStats = (props:Props) => {
+const battingAvg = (b: BatterStats): number =>
+    b.atBats !== 0 ? b.hits / b.atBats : 0;
 
-    const totalStats = props.lineupStats.reduce((totals, batter) => {
+const obp = (b: BatterStats): number => {
+    const pa = b.atBats + b.walks + b.hitByPitch;
+    return pa !== 0 ? (b.hits + b.walks + b.hitByPitch) / pa : 0;
+};
+
+const slg = (b: BatterStats): number =>
+    b.atBats !== 0 ? (b.hits + b.homeRuns * 3) / b.atBats : 0;
+
+const ops = (b: BatterStats): number =>
+    b.atBats !== 0 ? slg(b) + obp(b) : 0;
+
+const DisplayLineupStats = ({ lineupStats, currentBatter }: Props) => {
+
+    const totalStats = lineupStats.reduce((totals, batter) => {
         totals.plateAppearance += batter.plateAppearance;
         totals.atBats += batter.atBats;
         totals.hits += batter.hits;
@@ -22,27 +36,24 @@ const DisplayLineupStats = (props:Props) => {
         totals.hitByPitch += batter.hitByPitch;
         totals.homeRuns += batter.homeRuns;
         return totals;
-    }, {
-        plateAppearance: 0,
-        atBats: 0,
-        hits: 0,
-        walks: 0,
-        hitByPitch: 0,
-        homeRuns: 0
-    });
+    }, { plateAppearance: 0, atBats: 0, hits: 0, walks: 0, hitByPitch: 0, homeRuns: 0 });
 
-    const maxStats = {
-        plateAppearance: Math.max(...props.lineupStats.map(batter => batter.plateAppearance)),
-        atBats: Math.max(...props.lineupStats.map(batter => batter.atBats)),
-        hits: Math.max(...props.lineupStats.map(batter => batter.hits)),
-        walks: Math.max(...props.lineupStats.map(batter => batter.walks)),
-        hitByPitch: Math.max(...props.lineupStats.map(batter => batter.hitByPitch)),
-        homeRuns: Math.max(...props.lineupStats.map(batter => batter.homeRuns)),
-        battingAverage: Math.max(...props.lineupStats.map(batter => batter.atBats !== 0 ? batter.hits / batter.atBats : 0)),
-        onBasePercentage: Math.max(...props.lineupStats.map(batter => (batter.atBats + batter.walks + batter.hitByPitch) !== 0 ? (batter.hits + batter.walks + batter.hitByPitch) / (batter.atBats + batter.walks + batter.hitByPitch) : 0)),
-        sluggingPercentage: Math.max(...props.lineupStats.map(batter => batter.atBats !== 0 ? (batter.hits + batter.homeRuns * 3) / batter.atBats : 0)),
-        ops: Math.max(...props.lineupStats.map(batter => batter.atBats !== 0 ? (batter.hits + batter.homeRuns * 3) / batter.atBats + (batter.hits + batter.walks + batter.hitByPitch) / (batter.atBats + batter.walks + batter.hitByPitch) : 0))
-    };
+    const maxStats = useMemo(() => ({
+        plateAppearance: Math.max(...lineupStats.map(b => b.plateAppearance)),
+        atBats: Math.max(...lineupStats.map(b => b.atBats)),
+        hits: Math.max(...lineupStats.map(b => b.hits)),
+        walks: Math.max(...lineupStats.map(b => b.walks)),
+        hitByPitch: Math.max(...lineupStats.map(b => b.hitByPitch)),
+        homeRuns: Math.max(...lineupStats.map(b => b.homeRuns)),
+        battingAverage: Math.max(...lineupStats.map(battingAvg)),
+        onBasePercentage: Math.max(...lineupStats.map(obp)),
+        sluggingPercentage: Math.max(...lineupStats.map(slg)),
+        ops: Math.max(...lineupStats.map(ops)),
+    }), [lineupStats]);
+
+    const battersDerived = useMemo(() =>
+        lineupStats.map(b => ({ avg: battingAvg(b), obp: obp(b), slg: slg(b), ops: ops(b) })),
+    [lineupStats]);
 
     return (
         <div className="table-container">
@@ -59,38 +70,36 @@ const DisplayLineupStats = (props:Props) => {
                 <div>SLG</div>
                 <div>OPS</div>
             </div>
-            {props.lineupStats.map((batter, index) => (
-                <div className="table-row" key={batter.id}>
-                    <div className={props.currentBatter === index ? 'leading-stat' : ''}>
-                        {props.currentBatter === index ? '>' : ''}
-                        {batter.id}
-                        {props.currentBatter === index ? '<' : ''}
+            {lineupStats.map((batter, index) => {
+                const derived = battersDerived[index];
+                return (
+                    <div className="table-row" key={batter.id}>
+                        <div className={currentBatter === index ? 'leading-stat' : ''}>
+                            {currentBatter === index ? '>' : ''}
+                            {batter.id}
+                            {currentBatter === index ? '<' : ''}
+                        </div>
+                        <div className={batter.plateAppearance === maxStats.plateAppearance ? 'leading-stat' : ''}>{batter.plateAppearance}</div>
+                        <div className={batter.atBats === maxStats.atBats ? 'leading-stat' : ''}>{batter.atBats}</div>
+                        <div className={batter.hits === maxStats.hits ? 'leading-stat' : ''}>{batter.hits}</div>
+                        <div className={batter.walks === maxStats.walks ? 'leading-stat' : ''}>{batter.walks}</div>
+                        <div className={batter.hitByPitch === maxStats.hitByPitch ? 'leading-stat' : ''}>{batter.hitByPitch}</div>
+                        <div className={batter.homeRuns === maxStats.homeRuns ? 'leading-stat' : ''}>{batter.homeRuns}</div>
+                        <div className={derived.avg > 0 && derived.avg === maxStats.battingAverage ? 'leading-stat' : ''}>
+                            {formatStat(derived.avg)}
+                        </div>
+                        <div className={derived.obp > 0 && derived.obp === maxStats.onBasePercentage ? 'leading-stat' : ''}>
+                            {formatStat(derived.obp)}
+                        </div>
+                        <div className={derived.slg > 0 && derived.slg === maxStats.sluggingPercentage ? 'leading-stat' : ''}>
+                            {formatStat(derived.slg)}
+                        </div>
+                        <div className={derived.ops > 0 && derived.ops === maxStats.ops ? 'leading-stat' : ''}>
+                            {formatStat(derived.ops)}
+                        </div>
                     </div>
-                    <div className={batter.plateAppearance === maxStats.plateAppearance ? 'leading-stat' : ''}>{batter.plateAppearance}</div>
-                    <div className={batter.atBats === maxStats.atBats ? 'leading-stat' : ''}>{batter.atBats}</div>
-                    <div className={batter.hits === maxStats.hits ? 'leading-stat' : ''}>{batter.hits}</div>
-                    <div className={batter.walks === maxStats.walks ? 'leading-stat' : ''}>{batter.walks}</div>
-                    <div className={batter.hitByPitch === maxStats.hitByPitch ? 'leading-stat' : ''}>{batter.hitByPitch}</div>
-                    <div className={batter.homeRuns === maxStats.homeRuns ? 'leading-stat' : ''}>{batter.homeRuns}</div>
-                    <div className={batter.atBats !== 0 && batter.hits / batter.atBats === maxStats.battingAverage ? 'leading-stat' : ''}>
-                        {formatStat(batter.atBats !== 0 ? batter.hits / batter.atBats : 0)}
-                    </div>
-                    <div className={(batter.atBats + batter.walks + batter.hitByPitch) !== 0 && (batter.hits + batter.walks + batter.hitByPitch) / (batter.atBats + batter.walks + batter.hitByPitch) === maxStats.onBasePercentage ? 'leading-stat' : ''}>
-                        {formatStat((batter.atBats + batter.walks + batter.hitByPitch) !== 0 ?
-                            (batter.hits + batter.walks + batter.hitByPitch) / (batter.atBats + batter.walks + batter.hitByPitch) : 0)
-                        }
-                    </div>
-                    <div className={batter.atBats !== 0 && (batter.hits + batter.homeRuns * 3) / batter.atBats === maxStats.sluggingPercentage ? 'leading-stat' : ''}>
-                        {formatStat(batter.atBats !== 0 ? (batter.hits + batter.homeRuns * 3) / batter.atBats : 0)}
-                    </div>
-                    <div className={batter.atBats !== 0 && (batter.hits + batter.homeRuns * 3) / batter.atBats + (batter.hits + batter.walks + batter.hitByPitch) / (batter.atBats + batter.walks + batter.hitByPitch) === maxStats.ops ? 'leading-stat' : ''}>
-                        {formatStat(batter.atBats !== 0 ? 
-                            (batter.hits + batter.homeRuns * 3) / batter.atBats + (batter.hits + batter.walks + batter.hitByPitch) / (batter.atBats + batter.walks + batter.hitByPitch)
-                            : 0)
-                        }
-                    </div>
-                </div>
-            ))}
+                );
+            })}
             <div className="table-row">
                 <div>Total</div>
                 <div>{totalStats.plateAppearance}</div>
@@ -107,14 +116,14 @@ const DisplayLineupStats = (props:Props) => {
                 </div>
                 <div>{formatStat(totalStats.atBats !== 0 ? (totalStats.hits + totalStats.homeRuns * 3) / totalStats.atBats : 0)}</div>
                 <div>
-                    {formatStat(totalStats.atBats !== 0 ? 
+                    {formatStat(totalStats.atBats !== 0 ?
                         (totalStats.hits + totalStats.homeRuns * 3) / totalStats.atBats + (totalStats.hits + totalStats.walks + totalStats.hitByPitch) / (totalStats.atBats + totalStats.walks + totalStats.hitByPitch)
                         : 0)
                     }
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default DisplayLineupStats;

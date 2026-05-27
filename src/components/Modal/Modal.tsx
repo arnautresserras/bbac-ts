@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import parse from "html-react-parser";
+import { ModalType } from "../../types/modalType";
 
 interface ModalProps {
   title: string;
   content: string;
-  mode: string;
+  mode: ModalType;
   isOpen: boolean;
   hideModal: () => void;
   primaryActionText: string;
