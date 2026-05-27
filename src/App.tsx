@@ -212,8 +212,42 @@ function App() {
     pitcher.modifyStamina(-4);
   };
 
+  const single = () => {
+    setLineupStats(prev => {
+      let updated = updateLineupStat(prev, currentBatter, "hits", 1);
+      updated = updateLineupStat(updated, currentBatter, "atBats", 1);
+      return updated;
+    });
+    baseRunners.advanceRunners(true);
+    setModalContent("Single!", "", ModalType.TurnEnd);
+    showModal();
+    endTurn();
+  };
+
+  const out = () => {
+    setLineupStats(prev => updateLineupStat(prev, currentBatter, "atBats", 1));
+    setModalContent("Out!", "", ModalType.TurnEnd);
+    showModal();
+    endTurn();
+    counts.setCountOuts(counts.countOuts + 1);
+    handleEndInning();
+  };
+
+  const foul = () => {
+    const remaining = deck.handRef.current.filter(c => c !== "").length;
+    if (remaining > 0) {
+      if (counts.countStrikes < 2) {
+        counts.setCountStrikes(counts.countStrikes + 1);
+      }
+      pitcher.modifyStamina(-1);
+    } else {
+      const { fullDiscard } = deck.collectHand();
+      deck.dealHand(fullDiscard);
+    }
+  };
+
   const { playCard } = useCard({
-    ball, strike, swing, hitByPitch, wildPitch, homeRun,
+    ball, strike, swing, hitByPitch, wildPitch, homeRun, single, out, foul,
     hand: deck.hand,
     setHand: deck.setHandWithRef,
     discardCard: (card: CardName) => deck.setDiscard(prev => [...prev, card]),

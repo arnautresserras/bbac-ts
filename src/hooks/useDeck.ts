@@ -58,5 +58,6 @@ export function useDeck(handSize: number) {
     hand, currentDeck, discard,
     setHandWithRef, setDiscard,
     dealHand, collectHand, reset,
+    handRef,
   };
 }

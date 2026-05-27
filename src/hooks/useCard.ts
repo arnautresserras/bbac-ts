@@ -8,6 +8,9 @@ interface UseCardProps {
   hitByPitch: () => void;
   wildPitch: () => void;
   homeRun: () => void;
+  single: () => void;
+  out: () => void;
+  foul: () => void;
   hand: (CardName | "")[];
   setHand: (hand: (CardName | "")[]) => void;
   discardCard: (card: CardName) => void;
@@ -20,6 +23,9 @@ export function useCard({
   hitByPitch,
   wildPitch,
   homeRun,
+  single,
+  out,
+  foul,
   hand,
   setHand,
   discardCard
@@ -31,7 +37,10 @@ export function useCard({
     "Hit by pitch": hitByPitch,
     "Wild pitch": wildPitch,
     "Home run": homeRun,
-  }), [ball, strike, swing, hitByPitch, wildPitch, homeRun]);
+    "Single": single,
+    "Out": out,
+    "Foul": foul,
+  }), [ball, strike, swing, hitByPitch, wildPitch, homeRun, single, out, foul]);
 
   const playCard = useCallback((card: CardName, index: number) => {
     const newHand = [...hand];
