@@ -2,7 +2,7 @@ import { useState } from "react";
 
 export type InningResult = "continue" | "new-inning" | "game-over";
 
-export function useGameCounts(maxOutsPerInning: number, maxInnings: number) {
+export function useGameCounts(maxOutsPerInning: number) {
   const [countBalls, setCountBalls] = useState(0);
   const [countStrikes, setCountStrikes] = useState(0);
   const [countOuts, setCountOuts] = useState(0);
@@ -15,7 +15,7 @@ export function useGameCounts(maxOutsPerInning: number, maxInnings: number) {
 
   // Called after setCountOuts(countOuts + 1) — reads the pre-update value intentionally,
   // so (countOuts + 1) reflects the out that was just registered.
-  const endInning = (): InningResult => {
+  const endInning = (maxInnings: number): InningResult => {
     if ((countOuts + 1) % maxOutsPerInning === 0) {
       if (inning === maxInnings) return "game-over";
       setCountOuts(0);

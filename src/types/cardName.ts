@@ -4,4 +4,7 @@ export type CardName =
   | "Swing"
   | "Hit by pitch"
   | "Wild pitch"
-  | "Home run";
+  | "Home run"
+  | "Single"
+  | "Out"
+  | "Foul";

@@ -8,8 +8,8 @@ interface UseCardProps {
   hitByPitch: () => void;
   wildPitch: () => void;
   homeRun: () => void;
-  hand: string[];
-  setHand: (hand: string[]) => void;
+  hand: (CardName | "")[];
+  setHand: (hand: (CardName | "")[]) => void;
   discardCard: (card: CardName) => void;
 }
 
@@ -24,7 +24,7 @@ export function useCard({
   setHand,
   discardCard
 }: UseCardProps) {
-  const cardTypes = useMemo<Record<CardName, () => void>>(() => ({
+  const cardTypes = useMemo<Partial<Record<CardName, () => void>>>(() => ({
     "Ball": ball,
     "Strike": strike,
     "Swing": swing,
