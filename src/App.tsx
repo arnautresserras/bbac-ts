@@ -20,9 +20,12 @@ import { useDeck } from "./hooks/useDeck";
 import { useRun } from "./hooks/useRun";
 import { BOSS_1 } from "./data/bosses";
 import { GamePhase } from "./types/gamePhase";
+import { PlayerArchetype } from "./types/playerArchetype";
+import { generateRecruits } from "./utils/generateRecruits";
 import RunStartScreen from "./components/RunStartScreen/RunStartScreen";
 import BossIntroScreen from "./components/BossIntroScreen/BossIntroScreen";
 import BossWinScreen from "./components/BossWinScreen/BossWinScreen";
+import RecruitScreen from "./components/RecruitScreen/RecruitScreen";
 import RunEndScreen from "./components/RunEndScreen/RunEndScreen";
 
 const HAND_SIZE = 6;
@@ -46,6 +49,7 @@ function App() {
   const [currentBatter, setCurrentBatter] = useState(0);
   const [showStats, setShowStats] = useState(false);
   const [gamePhase, setGamePhase] = useState<GamePhase>("menu");
+  const [pendingRecruits, setPendingRecruits] = useState<PlayerArchetype[]>([]);
 
   const startBossFight = () => {
     const boss = run.getCurrentBoss();
@@ -71,7 +75,10 @@ function App() {
     setGamePhase("in-game");
   };
 
-  const handleContinueAfterBossWin = () => {
+  const handleBossWinContinue = () => setGamePhase("recruit");
+
+  const handleRecruitConfirm = (slot: number, recruit: PlayerArchetype) => {
+    run.replacePlayer(slot, recruit);
     run.advanceBoss();
     setGamePhase("boss-intro");
   };
@@ -129,6 +136,7 @@ function App() {
       if (run.currentBossIndex === 3) {
         setGamePhase("run-end-win");
       } else {
+        setPendingRecruits(generateRecruits());
         setGamePhase("boss-win");
       }
     }
@@ -313,7 +321,14 @@ function App() {
         </>
       )}
       {gamePhase === "boss-win" && (
-        <BossWinScreen boss={run.getCurrentBoss()} onContinue={handleContinueAfterBossWin} />
+        <BossWinScreen boss={run.getCurrentBoss()} onContinue={handleBossWinContinue} />
+      )}
+      {gamePhase === "recruit" && (
+        <RecruitScreen
+          recruits={pendingRecruits}
+          roster={run.roster}
+          onConfirm={handleRecruitConfirm}
+        />
       )}
       {gamePhase === "run-end-win" && (
         <RunEndScreen won={true} onPlayAgain={handlePlayAgain} />
