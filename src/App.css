@@ -80,20 +80,59 @@ button{
 }
 .scoreBug {
   display: flex;
-  flex-direction: row;
-  justify-content: space-evenly;
-  align-items: center;
+  flex-direction: column;
   width: 100%;
-  padding: 10px 0;
   background-color: #fff;
   color: #111;
 }
-.score{
+.scoreBug-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 6px 10px 2px;
+  border-bottom: 1px solid #e0e0e0;
+}
+.boss-name {
+  font-size: 1rem;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+}
+.boss-tier-badge {
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #111;
+  padding: 2px 7px;
+  border-radius: 10px;
+  letter-spacing: 0.03em;
+}
+.scoreBug-body {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+  padding: 10px 0;
+}
+.score {
   width: 25%;
 }
 .score-runs {
-  font-size: 2rem;
+  font-size: 1.6rem;
   text-align: center;
+  margin-bottom: 4px;
+}
+.run-progress-bar {
+  width: 100%;
+  background-color: #d5d5d5;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+.run-progress-fill {
+  height: 6px;
+  background-color: #0f8a32;
+  border-radius: 4px;
+  transition: width 0.2s ease;
 }
 .staminaBug {
 

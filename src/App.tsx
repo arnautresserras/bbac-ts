@@ -286,6 +286,10 @@ function App() {
           outs={counts.countOuts}
           inning={counts.inning}
           bases={baseRunners.bases}
+          bossName={run.getCurrentBoss().name}
+          bossTier={run.getCurrentBoss().tier}
+          maxInnings={run.getCurrentBoss().maxInnings}
+          targetRuns={run.getCurrentBoss().targetRuns}
         />
         {!showStats ? (
           <>
