@@ -6,7 +6,7 @@ export function useModal() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState<string>("");
   const [mode, setMode] = useState<ModalType>(ModalType.Info);
-  const [primaryText, setPrimaryText] = useState("");
+  const [primaryText, setPrimaryText] = useState("Close");
   const [onClose, setOnClose] = useState<(() => void) | undefined>();
   const [secondaryText, setSecondaryText] = useState<string | undefined>();
   const [onSecondary, setOnSecondary] = useState<(() => void) | undefined>();

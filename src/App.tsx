@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import DisplayHand from "./components/DisplayHand/DisplayHand";
 import ScoreBoard from "./components/ScoreBoard/ScoreBoard";
@@ -6,9 +6,7 @@ import DeckInfo from "./components/DeckInfo/DeckInfo";
 import Modal from "./components/Modal/Modal";
 import { BatterStats } from "./interfaces/BatterStats";
 import DisplayLineupStats from "./components/LineupStats/DisplayLineupStats";
-import { welcomeText } from "./data/gameTips";
 import { buildDeckFromRoster } from "./utils/buildDeck";
-import { AVERAGE_JOE } from "./data/playerArchetypes";
 import { initialLineupStats, resetStats, updateLineupStat } from "./logic/statsManager";
 import { shuffleDeck } from "./utils/shuffleDeck";
 import { useModal } from "./hooks/useModal";
@@ -21,6 +19,11 @@ import { useBaseRunners } from "./hooks/useBaseRunners";
 import { useDeck } from "./hooks/useDeck";
 import { useRun } from "./hooks/useRun";
 import { BOSS_1 } from "./data/bosses";
+import { GamePhase } from "./types/gamePhase";
+import RunStartScreen from "./components/RunStartScreen/RunStartScreen";
+import BossIntroScreen from "./components/BossIntroScreen/BossIntroScreen";
+import BossWinScreen from "./components/BossWinScreen/BossWinScreen";
+import RunEndScreen from "./components/RunEndScreen/RunEndScreen";
 
 const HAND_SIZE = 6;
 const MAX_OUTS_PER_INNING = 3;
@@ -29,9 +32,8 @@ const LINEUP_SIZE = 9;
 
 function App() {
   const {
-    modalProps, showModal, shouldHideHand,
-    setModalContent, setPrimaryAction, clearPrimaryAction,
-    setSecondaryAction, clearSecondaryAction,
+    modalProps, showModal, hideModal, shouldHideHand,
+    setModalContent, setPrimaryAction,
   } = useModal();
 
   const run = useRun();
@@ -43,25 +45,40 @@ function App() {
   const [lineupStats, setLineupStats] = useState<BatterStats[]>(initialLineupStats);
   const [currentBatter, setCurrentBatter] = useState(0);
   const [showStats, setShowStats] = useState(false);
-  const [runResult, setRunResult] = useState<"playing" | "boss-win" | "boss-loss">("playing");
-  const [modalFirstTips, setModalFirstTips] = useState(true);
+  const [gamePhase, setGamePhase] = useState<GamePhase>("menu");
 
-  const firstUpdate = useRef(true);
-  useEffect(() => {
-    if (firstUpdate.current) {
-      firstUpdate.current = false;
-      setModalContent("Welcome to Baseball at Cards", welcomeText, ModalType.Info);
-      setPrimaryAction("Start", () => {
-        deck.reset(shuffleDeck(buildDeckFromRoster(Array(9).fill(AVERAGE_JOE))));
-        deck.dealHand();
-        setLineupStats(prev => updateLineupStat(prev, currentBatter, "plateAppearance", 1));
-        setModalFirstTips(false);
-        clearPrimaryAction();
-      });
-      resetState();
-      return;
-    }
-  });
+  const startBossFight = () => {
+    const boss = run.getCurrentBoss();
+    counts.reset();
+    baseRunners.reset();
+    pitcher.reset(boss.initialStamina, boss.maxStamina);
+    const newDeck = shuffleDeck(buildDeckFromRoster(run.roster));
+    deck.reset(newDeck);
+    deck.dealHand();
+    setCurrentBatter(0);
+    setLineupStats(resetStats());
+    setShowStats(false);
+    hideModal();
+  };
+
+  const handleBeginRun = () => {
+    run.initRun();
+    setGamePhase("boss-intro");
+  };
+
+  const handlePlayBall = () => {
+    startBossFight();
+    setGamePhase("in-game");
+  };
+
+  const handleContinueAfterBossWin = () => {
+    run.advanceBoss();
+    setGamePhase("boss-intro");
+  };
+
+  const handlePlayAgain = () => {
+    setGamePhase("menu");
+  };
 
   const newPitcherRef = useRef(() => {});
   newPitcherRef.current = () => {
@@ -101,53 +118,25 @@ function App() {
     }
   };
 
-  const endGameStats = () => {
-    setShowStats(true);
-    showModal();
-  };
-
   const endBossLoss = () => {
-    setRunResult("boss-loss");
-    const runs = baseRunners.score;
-    const target = run.getCurrentBoss().targetRuns;
-    setModalContent("Game over!", `You scored ${runs} ${runs === 1 ? "run" : "runs"}. Target was ${target}.`, ModalType.GameEnd);
-    setSecondaryAction("Show Stats", endGameStats);
-    setPrimaryAction("New game", resetState);
+    setGamePhase("run-end-loss");
   };
 
   const checkBossWinRef = useRef(() => {});
   checkBossWinRef.current = () => {
-    if (runResult !== "playing") return;
+    if (gamePhase !== "in-game") return;
     if (baseRunners.score >= run.getCurrentBoss().targetRuns) {
-      setRunResult("boss-win");
-      const boss = run.getCurrentBoss();
-      const runs = baseRunners.score;
-      setModalContent(`${boss.name} defeated!`, `You scored ${runs} ${runs === 1 ? "run" : "runs"} in ${boss.maxInnings} innings!`, ModalType.GameEnd);
-      setSecondaryAction("Show Stats", endGameStats);
-      setPrimaryAction("New game", resetState);
-      showModal();
+      if (run.currentBossIndex === 3) {
+        setGamePhase("run-end-win");
+      } else {
+        setGamePhase("boss-win");
+      }
     }
   };
 
   useEffect(() => {
     checkBossWinRef.current();
   }, [baseRunners.score]);
-
-  const resetState = () => {
-    run.initRun();
-    baseRunners.reset();
-    counts.reset();
-    pitcher.reset(BOSS_1.initialStamina, BOSS_1.maxStamina);
-    const newDeck = shuffleDeck(buildDeckFromRoster(Array(9).fill(AVERAGE_JOE)));
-    deck.reset(newDeck);
-    deck.dealHand();
-    setCurrentBatter(0);
-    setLineupStats(resetStats());
-    setShowStats(false);
-    setRunResult("playing");
-    clearSecondaryAction();
-    setPrimaryAction("Close");
-  };
 
   const ball = () => {
     if (counts.countBalls < MAX_BALLS_BEFORE_WALK) {
@@ -275,44 +264,68 @@ function App() {
 
   return (
     <div className="App">
-      <Modal {...modalProps} />
-      <div className="BbaC-body">
-        <ScoreBoard
-          score={baseRunners.score}
-          pitcherStamina={pitcher.pitcherStamina}
-          maxPitcherStamina={pitcher.maxPitcherStamina}
-          balls={counts.countBalls}
-          strikes={counts.countStrikes}
-          outs={counts.countOuts}
-          inning={counts.inning}
-          bases={baseRunners.bases}
+      {gamePhase === "menu" && (
+        <RunStartScreen roster={run.roster} onBeginRun={handleBeginRun} />
+      )}
+      {gamePhase === "boss-intro" && (
+        <BossIntroScreen boss={run.getCurrentBoss()} onPlayBall={handlePlayBall} />
+      )}
+      {gamePhase === "in-game" && (
+        <>
+          <Modal {...modalProps} />
+          <div className="BbaC-body">
+            <ScoreBoard
+              score={baseRunners.score}
+              pitcherStamina={pitcher.pitcherStamina}
+              maxPitcherStamina={pitcher.maxPitcherStamina}
+              balls={counts.countBalls}
+              strikes={counts.countStrikes}
+              outs={counts.countOuts}
+              inning={counts.inning}
+              bases={baseRunners.bases}
+              bossName={run.getCurrentBoss().name}
+              bossTier={run.getCurrentBoss().tier}
+              maxInnings={run.getCurrentBoss().maxInnings}
+              targetRuns={run.getCurrentBoss().targetRuns}
+            />
+            {!showStats ? (
+              <>
+                <div className={shouldHideHand(modalProps.mode) && modalProps.isOpen ? "hidden-hand" : ""}>
+                  <DisplayHand playCard={playCard} hand={deck.hand} />
+                </div>
+                <DeckInfo
+                  currentDeck={deck.currentDeck.length}
+                  discard={deck.discard.length}
+                  hand={deck.hand.length}
+                />
+              </>
+            ) : null}
+            {showStats && (
+              <DisplayLineupStats lineupStats={lineupStats} currentBatter={currentBatter} />
+            )}
+            <button
+              className="statsButton"
+              onClick={() => setShowStats(!showStats)}
+            >
+              {(showStats ? "Hide" : "Show") + " Stats"}
+            </button>
+          </div>
+        </>
+      )}
+      {gamePhase === "boss-win" && (
+        <BossWinScreen boss={run.getCurrentBoss()} onContinue={handleContinueAfterBossWin} />
+      )}
+      {gamePhase === "run-end-win" && (
+        <RunEndScreen won={true} onPlayAgain={handlePlayAgain} />
+      )}
+      {gamePhase === "run-end-loss" && (
+        <RunEndScreen
+          won={false}
           bossName={run.getCurrentBoss().name}
           bossTier={run.getCurrentBoss().tier}
-          maxInnings={run.getCurrentBoss().maxInnings}
-          targetRuns={run.getCurrentBoss().targetRuns}
+          onPlayAgain={handlePlayAgain}
         />
-        {!showStats ? (
-          <>
-            <div className={shouldHideHand(modalProps.mode) && modalProps.isOpen ? "hidden-hand" : ""}>
-              <DisplayHand playCard={playCard} hand={deck.hand} />
-            </div>
-            <DeckInfo
-              currentDeck={deck.currentDeck.length}
-              discard={deck.discard.length}
-              hand={deck.hand.length}
-            />
-          </>
-        ) : null}
-        {showStats && (
-          <DisplayLineupStats lineupStats={lineupStats} currentBatter={currentBatter} />
-        )}
-        <button
-          className="statsButton"
-          onClick={() => { runResult !== "playing" ? resetState() : setShowStats(!showStats); }}
-        >
-          {runResult !== "playing" ? "Play again" : (showStats ? "Hide" : "Show") + " Stats"}
-        </button>
-      </div>
+      )}
     </div>
   );
 }

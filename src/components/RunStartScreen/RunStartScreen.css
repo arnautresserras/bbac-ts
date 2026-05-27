@@ -1,0 +1,55 @@
+.run-start-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem;
+  min-height: 90vh;
+  gap: 1.5rem;
+}
+.run-start-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+}
+.run-start-subtitle {
+  font-size: 1.1rem;
+  color: #555;
+  text-align: center;
+}
+.run-start-roster {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  max-width: 700px;
+  width: 100%;
+}
+.roster-player {
+  border: 2px solid #111;
+  border-radius: 10px;
+  padding: 0.5rem 0.75rem;
+  width: calc(33% - 1rem);
+  min-width: 150px;
+}
+.roster-player-name {
+  font-weight: bold;
+  margin-bottom: 0.3rem;
+  font-size: 0.9rem;
+}
+.roster-player-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.roster-card-tag {
+  font-size: 0.7rem;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  padding: 1px 5px;
+  white-space: nowrap;
+}
+.run-start-btn {
+  margin-top: 1rem;
+  font-size: 1.4rem;
+  padding: 0.75rem 2rem;
+}

@@ -1,0 +1,37 @@
+.boss-intro-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 90vh;
+}
+.boss-intro-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  border: 3px solid #111;
+  border-radius: 16px;
+  padding: 2.5rem 3rem;
+  max-width: 360px;
+  width: 90%;
+}
+.boss-intro-tier-badge {
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: #111;
+  padding: 3px 12px;
+  border-radius: 10px;
+  letter-spacing: 0.04em;
+}
+.boss-intro-name {
+  font-size: 2rem;
+  text-align: center;
+}
+.boss-intro-details {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 1.1rem;
+  text-align: center;
+}
