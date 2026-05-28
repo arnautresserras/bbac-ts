@@ -26,16 +26,23 @@ export function useDeck(handSize: number) {
   };
 
   const dealHand = (discardToRefill?: CardName[]) => {
+    let newHand: CardName[] = [];
+    let shouldClearDiscard = false;
+
     setCurrentDeck(prevDeck => {
       let deckCopy = [...prevDeck];
       if (deckCopy.length < handSize && discardToRefill && discardToRefill.length > 0) {
         deckCopy = shuffleDeck([...deckCopy, ...discardToRefill]);
-        setDiscard([]);
+        shouldClearDiscard = true;
       }
-      const newHand = deckCopy.splice(0, handSize);
-      setHandWithRef(newHand);
+      newHand = deckCopy.splice(0, handSize);
       return deckCopy;
     });
+
+    setHandWithRef(newHand);
+    if (shouldClearDiscard) {
+      setDiscard([]);
+    }
   };
 
   // Moves the remaining hand into discard and returns the count of playable cards
