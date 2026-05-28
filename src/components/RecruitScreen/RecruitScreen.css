@@ -84,11 +84,11 @@
 }
 
 .recruit-slot {
+  box-sizing: border-box;
   border: 2px solid #999;
   border-radius: 10px;
   padding: 0.5rem 0.75rem;
-  width: calc(33% - 1rem);
-  min-width: 150px;
+  width: calc(50% - 0.25rem);
   text-align: left;
   background: #f8f8f8;
   color: #111;
