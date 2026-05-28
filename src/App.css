@@ -302,6 +302,34 @@ button{
   color: #555;
   pointer-events: none;
 }
+.card-tooltip {
+  position: fixed;
+  transform: translate(-50%, calc(-100% - 10px));
+  width: 150px;
+  background: rgba(18, 18, 18, 0.93);
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+  z-index: 2000;
+  animation: tooltip-in 0.12s ease;
+}
+.card-tooltip__name {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.card-tooltip__desc {
+  font-size: 0.68rem;
+  line-height: 1.35;
+  color: #ddd;
+}
+@keyframes tooltip-in {
+  from { opacity: 0; transform: translate(-50%, calc(-100% - 6px)); }
+  to   { opacity: 1; transform: translate(-50%, calc(-100% - 10px)); }
+}
 .deckInfo{
   margin-top: auto;
   justify-self: flex-end;

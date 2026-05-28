@@ -9,6 +9,7 @@ import { StrikeIcon } from "./icons/StrikeIcon";
 import { SwingIcon } from "./icons/SwingIcon";
 import { WildPitchIcon } from "./icons/WildPitchIcon";
 import { CardName } from "../../types/cardName";
+import { CARD_DESCRIPTIONS } from "../../data/cardDescriptions";
 
 const iconMap: Record<CardName, React.FC<{ size?: number; color?: string }>> = {
     "Ball": BallIcon,
@@ -67,6 +68,9 @@ const DisplayHand = ({ hand, playCard }: Props) => {
     const dragStartPos = useRef({ x: 0, y: 0 });
     const dragLocalDelta = useRef({ x: 0, y: 0 });
 
+    const [tooltipIndex, setTooltipIndex] = useState<number | null>(null);
+    const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
+
     // Sync orderedCards with the hand prop.
     // Preserve reorder if only cards were played (removed); reset on new hand.
     useEffect(() => {
@@ -80,6 +84,17 @@ const DisplayHand = ({ hand, playCard }: Props) => {
                 .filter((c): c is HandCard => c !== null);
         });
     }, [hand]);
+
+    useEffect(() => {
+        const dismiss = (e: PointerEvent) => {
+            if (!(e.target as HTMLElement).closest(".hand-card")) {
+                setTooltipIndex(null);
+                setTooltipPos(null);
+            }
+        };
+        document.addEventListener("pointerdown", dismiss);
+        return () => document.removeEventListener("pointerdown", dismiss);
+    }, []);
 
     // Recompute fan angles when the container resizes or the active card count changes.
     useEffect(() => {
@@ -185,6 +200,22 @@ const DisplayHand = ({ hand, playCard }: Props) => {
                 playCard(capturedCard.card, capturedCard.originalIndex);
             }, 150);
         } else {
+            const sdx = e.clientX - dragStartPos.current.x;
+            const sdy = e.clientY - dragStartPos.current.y;
+            const isTap = Math.sqrt(sdx * sdx + sdy * sdy) < 8;
+
+            if (isTap) {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const closing = tooltipIndex === displayIndex;
+                setTooltipIndex(closing ? null : displayIndex);
+                setTooltipPos(closing ? null : { x: rect.left + rect.width / 2, y: rect.top });
+                elem.style.transition = "";
+                elem.style.transform = "";
+                setDragDisplayIndex(null);
+                setInsertionIndex(null);
+                return;
+            }
+
             const finalInsertionIdx = insertionIndex ?? displayIndex;
             if (finalInsertionIdx !== displayIndex) {
                 setOrderedCards(prev => {
@@ -243,6 +274,20 @@ const DisplayHand = ({ hand, playCard }: Props) => {
                     );
                 })}
             </div>
+            {tooltipIndex !== null && tooltipPos !== null && (() => {
+                const hc = orderedCards[tooltipIndex];
+                if (!hc) return null;
+                const desc = CARD_DESCRIPTIONS[hc.card];
+                return (
+                    <div
+                        className="card-tooltip"
+                        style={{ left: tooltipPos.x, top: tooltipPos.y }}
+                    >
+                        <span className="card-tooltip__name">{hc.card}</span>
+                        <span className="card-tooltip__desc">{desc?.short}</span>
+                    </div>
+                );
+            })()}
         </div>
     );
 };
