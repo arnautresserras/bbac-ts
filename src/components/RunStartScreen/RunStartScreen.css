@@ -21,15 +21,14 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 0.5rem;
-  max-width: 700px;
+  max-width: 600px;
   width: 100%;
 }
 .roster-player {
   border: 2px solid #111;
   border-radius: 10px;
   padding: 0.5rem 0.75rem;
-  width: calc(33% - 1rem);
-  min-width: 150px;
+  flex: 0 0 calc(50% - 0.25rem);
 }
 .roster-player-name {
   font-weight: bold;
