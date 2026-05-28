@@ -19,9 +19,12 @@ import { useBaseRunners } from "./hooks/useBaseRunners";
 import { useDeck } from "./hooks/useDeck";
 import { useRun } from "./hooks/useRun";
 import { BOSS_1 } from "./data/bosses";
+import { SAMPLE_GAME_ROSTER } from "./data/presetRosters";
 import { GamePhase } from "./types/gamePhase";
 import { PlayerArchetype } from "./types/playerArchetype";
 import { generateRecruits } from "./utils/generateRecruits";
+import MenuScreen from "./components/MenuScreen/MenuScreen";
+import HelpScreen from "./components/HelpScreen/HelpScreen";
 import RunStartScreen from "./components/RunStartScreen/RunStartScreen";
 import BossIntroScreen from "./components/BossIntroScreen/BossIntroScreen";
 import BossWinScreen from "./components/BossWinScreen/BossWinScreen";
@@ -49,6 +52,7 @@ function App() {
   const [currentBatter, setCurrentBatter] = useState(0);
   const [showStats, setShowStats] = useState(false);
   const [gamePhase, setGamePhase] = useState<GamePhase>("menu");
+  const [isSampleGame, setIsSampleGame] = useState(false);
   const [pendingRecruits, setPendingRecruits] = useState<PlayerArchetype[]>([]);
 
   const startBossFight = () => {
@@ -65,7 +69,19 @@ function App() {
     hideModal();
   };
 
+  const handleGoToRunStart = () => setGamePhase("run-start");
+
+  const handleSampleGame = () => {
+    setIsSampleGame(true);
+    run.initRunWithRoster(SAMPLE_GAME_ROSTER);
+    setGamePhase("boss-intro");
+  };
+
+  const handleHelp = () => setGamePhase("help");
+  const handleBackFromHelp = () => setGamePhase("menu");
+
   const handleBeginRun = () => {
+    setIsSampleGame(false);
     run.initRun();
     setGamePhase("boss-intro");
   };
@@ -84,6 +100,8 @@ function App() {
   };
 
   const handlePlayAgain = () => {
+    setIsSampleGame(false);
+    run.initRun();
     setGamePhase("menu");
   };
 
@@ -133,7 +151,7 @@ function App() {
   checkBossWinRef.current = () => {
     if (gamePhase !== "in-game") return;
     if (baseRunners.score >= run.getCurrentBoss().targetRuns) {
-      if (run.currentBossIndex === 3) {
+      if (isSampleGame || run.currentBossIndex === 3) {
         setGamePhase("run-end-win");
       } else {
         setPendingRecruits(generateRecruits());
@@ -273,7 +291,13 @@ function App() {
   return (
     <div className="App">
       {gamePhase === "menu" && (
-        <RunStartScreen roster={run.roster} onBeginRun={handleBeginRun} />
+        <MenuScreen onStartRun={handleGoToRunStart} onSampleGame={handleSampleGame} onHelp={handleHelp} />
+      )}
+      {gamePhase === "help" && (
+        <HelpScreen onBack={handleBackFromHelp} />
+      )}
+      {gamePhase === "run-start" && (
+        <RunStartScreen roster={run.roster} onBeginRun={handleBeginRun} onBack={() => setGamePhase("menu")} />
       )}
       {gamePhase === "boss-intro" && (
         <BossIntroScreen boss={run.getCurrentBoss()} onPlayBall={handlePlayBall} />

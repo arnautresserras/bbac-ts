@@ -4,9 +4,10 @@ import "./RunStartScreen.css";
 interface Props {
   roster: PlayerArchetype[];
   onBeginRun: () => void;
+  onBack: () => void;
 }
 
-const RunStartScreen = ({ roster, onBeginRun }: Props) => (
+const RunStartScreen = ({ roster, onBeginRun, onBack }: Props) => (
   <div className="run-start-screen">
     <h1 className="run-start-title">Baseball at Cards</h1>
     <p className="run-start-subtitle">Survive 4 bosses. Build your lineup.</p>
@@ -23,6 +24,7 @@ const RunStartScreen = ({ roster, onBeginRun }: Props) => (
       ))}
     </div>
     <button className="run-start-btn" onClick={onBeginRun}>Begin Run</button>
+    <button className="run-start-back" onClick={onBack}>← Back</button>
   </div>
 );
 

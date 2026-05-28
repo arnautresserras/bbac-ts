@@ -1,10 +1,13 @@
 .run-start-screen {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem 1rem;
-  min-height: 90vh;
-  gap: 1.5rem;
+  justify-content: center;
+  padding: 1rem;
+  height: 100vh;
+  overflow: hidden;
+  gap: 1rem;
 }
 .run-start-title {
   font-size: 2.5rem;
@@ -48,7 +51,22 @@
   white-space: nowrap;
 }
 .run-start-btn {
-  margin-top: 1rem;
   font-size: 1.4rem;
   padding: 0.75rem 2rem;
+}
+
+.run-start-back {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  background: none;
+  border: none;
+  color: #555;
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+}
+
+.run-start-back:hover {
+  color: #111;
 }

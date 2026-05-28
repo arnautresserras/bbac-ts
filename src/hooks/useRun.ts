@@ -24,6 +24,12 @@ export function useRun() {
     setCurrentBossIndex(0);
   };
 
+  const initRunWithRoster = (presetRoster: PlayerArchetype[]) => {
+    setRoster(presetRoster);
+    setBossSequence(buildBossSequence());
+    setCurrentBossIndex(0);
+  };
+
   const getCurrentBoss = (): Boss => bossSequence[currentBossIndex];
 
   const advanceBoss = () => setCurrentBossIndex(i => i + 1);
@@ -42,6 +48,7 @@ export function useRun() {
     bossSequence,
     currentBossIndex,
     initRun,
+    initRunWithRoster,
     getCurrentBoss,
     advanceBoss,
     replacePlayer,
