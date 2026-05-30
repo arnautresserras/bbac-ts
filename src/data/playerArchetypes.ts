@@ -7,8 +7,8 @@ export const AVERAGE_JOE: PlayerArchetype = {
 };
 
 export const POWER_SLUGGER: PlayerArchetype = {
-  id: "power_slugger",
-  name: "Power Slugger",
+  id: "strongman",
+  name: "Strongman",
   cards: ["Ball", "Ball", "Strike", "Home run", "Out", "Swing"],
 };
 
@@ -19,8 +19,8 @@ export const ZEN_MASTER: PlayerArchetype = {
 };
 
 export const INSTIGATOR: PlayerArchetype = {
-  id: "instigator",
-  name: "Instigator",
+  id: "jester",
+  name: "Jester",
   cards: ["Ball", "Ball", "Strike", "Swing", "Hit by pitch", "Hit by pitch"],
 };
 
@@ -31,8 +31,8 @@ export const RATTLER: PlayerArchetype = {
 };
 
 export const CONTACT_HITTER: PlayerArchetype = {
-  id: "contact_hitter",
-  name: "Contact Hitter",
+  id: "samurai",
+  name: "Samurai",
   cards: ["Ball", "Ball", "Strike", "Single", "Single", "Swing"],
 };
 

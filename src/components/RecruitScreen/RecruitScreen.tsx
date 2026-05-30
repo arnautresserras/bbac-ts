@@ -4,11 +4,11 @@ import { AVERAGE_JOE } from "../../data/playerArchetypes";
 import "./RecruitScreen.css";
 
 const ARCHETYPE_DESCRIPTIONS: Record<string, string> = {
-  power_slugger: "High risk, high reward. Home runs or outs.",
+  strongman: "High risk, high reward. Home runs or outs.",
   zen_master: "Patient. Draws walks, rarely swings.",
-  instigator: "Forces hit-by-pitches. Applies pressure.",
+  jester: "Forces hit-by-pitches. Applies pressure.",
   rattler: "Wild pitches advance runners. Unsettles pitchers.",
-  contact_hitter: "Reliable singles. Gets on base consistently.",
+  samurai: "Reliable singles. Gets on base consistently.",
   grinder: "Fouls extend at-bats. Wears down pitchers.",
 };
 
